@@ -198,7 +198,7 @@ function fmtDate(s) {
   return `${d} ${AYLAR[m - 1]} ${y}`;
 }
 function special(s) {
-  if (s === "2021-11-20") return "düğünümüz 💍";
+  if (s === "2021-11-20") return "💍";
   if (s.endsWith("-11-20")) return `${+s.slice(0, 4) - 2021}. yıl dönümü`;
   return "";
 }
