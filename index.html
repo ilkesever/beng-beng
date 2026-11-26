@@ -169,6 +169,16 @@
     body.mini .card { cursor: zoom-in; }
     body.mini #globe { height: 100vh; }
   }
+  .result { position: fixed; left: 12px; right: 12px; bottom: 140px; z-index: 4; padding: 18px 18px 16px; border-radius: 22px; text-align: center;
+            background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 16px 40px rgba(0,0,0,.45); opacity: 0; transform: translateY(24px); pointer-events: none;
+            transition: opacity .45s, transform .45s cubic-bezier(.2,.8,.2,1); }
+  .result.on { opacity: 1; transform: none; pointer-events: auto; }
+  .result .km { font-size: 2.3rem; font-weight: 700; color: var(--accent); line-height: 1.1; }
+  .result .where { margin-top: 4px; color: var(--text); }
+  .result .where b { color: var(--pink); }
+  .result .pts { margin-top: 2px; color: var(--muted); font-size: .9rem; }
+  .result button { margin-top: 14px; padding: 11px 22px; border-radius: 999px; background: var(--pink); color: #fff; font-weight: 700; }
   .cap .peek { padding: 6px 14px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .85rem; font-weight: 500; }
   .cap .peek:hover { background: var(--pink); }
   @media (max-width: 760px) { .toast { left: 50%; bottom: auto; top: 64px; font-size: .9rem; } body.mini .toast { top: auto; bottom: 170px; } }
@@ -195,6 +205,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="result" id="result"></div>
 
 <div class="dock">
   <div class="row main">
@@ -456,6 +467,7 @@ function show(i) {
 
   // cevabı henüz görülmemiş foto: yer gizli, tahmin et ya da "Göster"
   hidden = !revealed.has(i);
+  $("result").classList.remove("on");
   setMini(false);
   document.body.classList.toggle("guessing", hidden);
   swapCard(makeCard(p, hidden), dir);
@@ -478,8 +490,8 @@ function setMini(v) {
   fit();
 }
 
-function reveal(guess) {
-  setMini(false);
+function reveal(guess, keepMini = false) {
+  if (!keepMini) setMini(false);
   const p = PHOTOS[cur], fresh = hidden;
   if (hidden) card.querySelector(".cap").innerHTML = captionHTML(p);
   hidden = false;
@@ -492,6 +504,12 @@ function reveal(guess) {
   const arcs = guess ? [{ startLat: guess.lat, startLng: guess.lng, endLat: p.lat, endLng: p.lng, cur: true, guess: true }] : [];
   world.pointsData([]).arcsData([...routeArcs(grew), ...arcs]).ringsData([p])
     .htmlElementsData(markers([{ kind: "cur", lat: p.lat, lng: p.lng, city: p.city }, ...(guess ? [{ kind: "guess", lat: guess.lat, lng: guess.lng }] : [])]));
+  if (keepMini) {
+    // ikisi birden ekranda: orta nokta, mesafeye göre uzaklık
+    const d = km(guess, p);
+    world.pointOfView({ lat: (guess.lat + p.lat) / 2, lng: (guess.lng + p.lng) / 2, altitude: Math.max(0.9, Math.min(3.2, 0.7 + d / 2200)) }, 1500);
+    return;   // otomatik oynatma "Fotoğrafa dön" ile devam eder
+  }
   const flight = flyTo(p, guess || fromP);
   scheduleNext(flight + (guess ? 3000 : 0));
 }
@@ -510,9 +528,27 @@ function guessAt(lat, lng) {
   const d = km(g, p), pts = points(d);
   score += pts;
   updateNum();
-  toast(d < 25 ? `🎯 Tam isabet! <b>+${fmt(pts)}</b>` : `🎯 ${p.city}: ${fmt(Math.round(d))} km uzaktaydın · <b>+${fmt(pts)}</b>`);
-  reveal(g);
+  const resultFirst = isMobile() && document.body.classList.contains("mini");
+  if (resultFirst) {
+    $("result").innerHTML = `<div class="km">${d < 25 ? "Tam isabet! 🎯" : fmt(Math.round(d)) + " km"}</div>
+      <div class="where">${d < 25 ? "" : "uzaktaydın · "}<b>${p.city}</b>, ${p.region}</div>
+      <div class="pts">+${fmt(pts)} puan</div><button id="resultBtn">📷 Fotoğrafa dön</button>`;
+    $("result").classList.add("on");
+  } else toast(d < 25 ? `🎯 Tam isabet! <b>+${fmt(pts)}</b>` : `🎯 ${p.city}: ${fmt(Math.round(d))} km uzaktaydın · <b>+${fmt(pts)}</b>`);
+  reveal(g, resultFirst);
 }
+
+// telefon sonuç ekranından fotoğrafa dönüş
+function closeResult() {
+  if (!$("result").classList.contains("on")) return false;
+  $("result").classList.remove("on");
+  setMini(false);
+  const p = PHOTOS[cur];
+  world.pointOfView({ lat: p.lat, lng: p.lng, altitude: 1.1 }, 1200);
+  scheduleNext(1200);
+  return true;
+}
+$("result").addEventListener("click", e => { if (e.target.closest("#resultBtn")) closeResult(); });
 
 // tek tık: tahmin + cevap. globe.gl fareyle 1px kıpırdamayı bile sürükleme sayıp tıkı yutuyor;
 // tıkı kendimiz algılıyoruz (6px tolerans, tek parmak).
@@ -582,7 +618,7 @@ stage.addEventListener("touchend", e => {
   if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1));
 });
 stage.addEventListener("click", e => {
-  if (document.body.classList.contains("mini")) { if (e.target.closest(".card")) setMini(false); return; }   // küçük fotoya dokun: tekrar bak
+  if (document.body.classList.contains("mini")) { if (e.target.closest(".card") && !closeResult()) setMini(false); return; }   // küçük fotoya dokun: tekrar bak
   if (e.target.closest(".tbtn")) { setMini(true); toast("Dünyada bir yere dokun 👆"); }
   else if (e.target.closest(".peek")) reveal();
   else if (e.target.closest(".card") && !hidden) show(cur + 1);
