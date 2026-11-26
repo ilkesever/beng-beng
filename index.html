@@ -35,13 +35,13 @@
 
   /* fotoğraf sahnesi */
   .stage { position: fixed; top: 0; left: 0; width: 58vw; height: 100vh; display: flex; align-items: center; justify-content: center;
-           padding: 70px 24px 120px; pointer-events: none; perspective: 1200px; }
+           padding: 60px 24px 180px; pointer-events: none; perspective: 1200px; }
   @media (max-width: 760px) { .stage { width: 100vw; height: 66vh; padding: 56px 16px 12px; } }
 
   .card { position: absolute; background: var(--paper); color: var(--ink); padding: 12px 12px 0; border-radius: 4px;
           box-shadow: 0 30px 60px rgba(0,0,0,.55), 0 4px 14px rgba(0,0,0,.35); pointer-events: auto;
           transition: transform .9s cubic-bezier(.2,.8,.2,1), opacity .9s; will-change: transform, opacity; }
-  .card img { display: block; max-width: min(46vw, 820px); max-height: calc(100vh - 290px); width: auto; height: auto; border-radius: 2px; background: #ddd; }
+  .card img { display: block; max-width: min(46vw, 820px); max-height: calc(100vh - 330px); width: auto; height: auto; border-radius: 2px; background: #ddd; }
   @media (max-width: 760px) { .card { padding: 8px 8px 0; } .card img { max-width: calc(100vw - 48px); max-height: calc(66vh - 150px); } }
   .card { width: min-content; }   /* çerçeve fotoğraf kadar geniş; yazı genişletmesin */
   .cap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 12px; padding: 10px 4px 12px; }
@@ -77,6 +77,25 @@
   .years span { position: absolute; transform: translateX(-2px); }
 
   #player { width: 300px; height: 80px; border-radius: 12px; overflow: hidden; flex: none; }
+
+  /* şimdi çalıyor (sadece masaüstü) */
+  .now { position: fixed; top: 56px; right: 20px; z-index: 2; display: flex; align-items: center; gap: 14px; max-width: 380px;
+         padding: 12px 18px 12px 12px; border-radius: 18px; background: var(--glass); border: 1px solid var(--line);
+         backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 12px 30px rgba(0,0,0,.35);
+         opacity: 0; transform: translateX(30px); transition: opacity .6s, transform .6s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+  .now.on { opacity: 1; transform: none; }
+  .now.swap { opacity: 0; transform: translateY(-10px); transition-duration: .3s; }
+  .now img { width: 64px; height: 64px; border-radius: 10px; flex: none; box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+  .now .meta { min-width: 0; }
+  .now .lbl { display: flex; align-items: center; gap: 8px; font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: #1ed760; }
+  .now .t { font-size: 1.15rem; font-weight: 700; line-height: 1.2; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .now .a { color: var(--muted); font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 10px; }
+  .eq i { width: 3px; height: 100%; background: #1ed760; border-radius: 1px; animation: eq 0.9s ease-in-out infinite; transform-origin: bottom; }
+  .eq i:nth-child(2) { animation-delay: -.3s; } .eq i:nth-child(3) { animation-delay: -.6s; }
+  @keyframes eq { 0%,100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+  .now.paused .eq i { animation-play-state: paused; }
+  @media (max-width: 760px) { .now { display: none; } }
   @media (max-width: 760px) {
     .dock { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
     .row.main { order: 2; }
@@ -109,6 +128,15 @@
   <div class="num" id="num"></div>
 </div>
 
+<div class="now" id="now">
+  <img id="nowImg" alt="">
+  <div class="meta">
+    <div class="lbl"><span class="eq"><i></i><i></i><i></i></span>şimdi çalıyor</div>
+    <div class="t" id="nowT"></div>
+    <div class="a" id="nowA"></div>
+  </div>
+</div>
+
 <div class="dock">
   <div class="row main">
     <button class="ctrl" id="prev" aria-label="önceki"><svg viewBox="0 0 24 24"><path d="M15.5 4 7.5 12l8 8 1.4-1.4L10.3 12l6.6-6.6z"/></svg></button>
@@ -130,6 +158,83 @@
 <script>
 const PHOTOS = [{"src":"photos/01.jpg","date":"2018-01-21","city":"Amsterdam","region":"Hollanda","lat":52.37,"lng":4.89,"w":1536,"h":2046},{"src":"photos/02.jpg","date":"2018-01-23","city":"Brüksel","region":"Belçika","lat":50.85,"lng":4.36,"w":1536,"h":2046},{"src":"photos/03.jpg","date":"2018-01-24","city":"Brugge","region":"Belçika","lat":51.21,"lng":3.23,"w":1280,"h":960},{"src":"photos/04.jpg","date":"2018-01-24","city":"Brugge","region":"Belçika","lat":51.21,"lng":3.22,"w":2046,"h":1536},{"src":"photos/05.jpg","date":"2018-01-25","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":2046,"h":1536},{"src":"photos/06.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.35,"w":1536,"h":2046},{"src":"photos/07.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/08.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/09.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":1536,"h":2048},{"src":"photos/10.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/11.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/12.jpg","date":"2018-09-15","city":"Yedigöller","region":"Bolu","lat":40.94,"lng":31.75,"w":1536,"h":2048},{"src":"photos/13.jpg","date":"2019-04-04","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/14.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/15.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/16.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/17.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/18.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/19.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":2048,"h":1536},{"src":"photos/20.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/21.jpg","date":"2019-04-07","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/22.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/23.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/24.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/25.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":2046,"h":1536},{"src":"photos/26.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/27.jpg","date":"2019-04-10","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/28.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/29.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/30.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/31.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/32.jpg","date":"2021-11-20","city":"Ankara","region":"Türkiye","lat":39.87,"lng":32.7,"w":1536,"h":2048},{"src":"photos/33.jpg","date":"2022-02-13","city":"Münih","region":"Almanya","lat":48.18,"lng":11.53,"w":2048,"h":1536},{"src":"photos/34.jpg","date":"2022-10-31","city":"Münih","region":"Almanya","lat":48.13,"lng":11.58,"w":2048,"h":1536},{"src":"photos/35.jpg","date":"2023-04-07","city":"Verona","region":"İtalya","lat":45.45,"lng":11.0,"w":1536,"h":2048},{"src":"photos/36.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/37.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/38.jpg","date":"2024-11-20","city":"Münih","region":"Almanya","lat":48.13,"lng":11.59,"w":2048,"h":1536},{"src":"photos/39.jpg","date":"2025-12-01","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.49,"w":1536,"h":2048},{"src":"photos/40.jpg","date":"2025-12-03","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.56,"w":2048,"h":1536},{"src":"photos/41.jpg","date":"2025-12-04","city":"Chiang Mai","region":"Tayland","lat":18.79,"lng":98.99,"w":1536,"h":2048},{"src":"photos/42.jpg","date":"2025-12-06","city":"Chiang Mai","region":"Tayland","lat":19.21,"lng":98.86,"w":2048,"h":1536},{"src":"photos/43.jpg","date":"2025-12-08","city":"Krabi","region":"Tayland","lat":8.11,"lng":98.78,"w":2048,"h":1536},{"src":"photos/44.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":1536,"h":2048},{"src":"photos/45.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":2048,"h":1536},{"src":"photos/46.jpg","date":"2025-12-10","city":"Phi Phi","region":"Tayland","lat":7.68,"lng":98.77,"w":1536,"h":2048},{"src":"photos/47.jpg","date":"2025-12-12","city":"Bangkok","region":"Tayland","lat":13.73,"lng":100.58,"w":2048,"h":1536},{"src":"photos/48.jpg","date":"2026-02-21","city":"İstanbul","region":"Türkiye","lat":41.02,"lng":28.97,"w":1536,"h":2048},{"src":"photos/49.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/50.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/51.jpg","date":"2026-03-16","city":"Londra","region":"İngiltere","lat":51.5,"lng":-0.14,"w":2048,"h":1536},{"src":"photos/52.jpg","date":"2026-03-17","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.09,"w":2048,"h":1536},{"src":"photos/53.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":2048,"h":1536},{"src":"photos/54.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":1536,"h":2048},{"src":"photos/55.jpg","date":"2026-03-25","city":"Edinburgh","region":"İskoçya","lat":55.95,"lng":-3.22,"w":2048,"h":1536},{"src":"photos/56.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":1536,"h":2048},{"src":"photos/57.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":2048,"h":1536},{"src":"photos/58.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":1536,"h":2048},{"src":"photos/59.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":2048,"h":1536},{"src":"photos/60.jpg","date":"2026-09-14","city":"Gaziantep","region":"Türkiye","lat":37.07,"lng":37.38,"w":2048,"h":1536},{"src":"photos/61.jpg","date":"2026-09-15","city":"Şanlıurfa","region":"Türkiye","lat":37.15,"lng":38.79,"w":2048,"h":1536},{"src":"photos/62.jpg","date":"2026-09-16","city":"Mardin","region":"Türkiye","lat":37.31,"lng":40.74,"w":2048,"h":1536}];
 const PLAYLIST = "spotify:playlist:0QIMADjQtN9GnuYD6gvrHE";
+const COVER = "https://i.scdn.co/image/";
+const TRACKS = {
+  "2aibwv5hGXSgw7Yru8IYTO": ["Snow (Hey Oh)", "Red Hot Chili Peppers", "ab67616d00001e0209fd83d32aee93dceba78517", 334666],
+  "2HBanw3xVQSWrdOtPfjsnK": ["Tearing Me Up", "Bob Moses", "ab67616d00001e02ba8914058d8b4021a538ea1e", 223539],
+  "2jiPHbFX5XM8TjaTfYJ0eo": ["Stolen Dance", "Milky Chance", "ab67616d00001e0223444c767d67417474f103e3", 313684],
+  "3ClBKQkKoaUQ6UOhe2xlJK": ["Good News", "Mac Miller", "ab67616d00001e026460758b722022af489f0098", 342040],
+  "3qhlB30KknSejmIvZZLjOD": ["End of Beginning", "Djo", "ab67616d00001e02987466cc3363ea26094ca3c4", 159245],
+  "51rPRW8NjxZoWPPjnRGzHw": ["Tadow", "Masego, FKJ", "ab67616d00001e02f1814f1b76df2fa196e4f45e", 301893],
+  "4tTTPrWDHq7yanZmjAU9r1": ["Olsun", "Pilli Bebek", "ab67616d00001e021cfffc0ae773f811a37f9a59", 277720],
+  "2nlWKPk6RzV0n9a1OUeTCz": ["Yitirmeden", "Pinhani", "ab67616d00001e021d68aad57a603d979f07c9a4", 217106],
+  "6qkXhA5mVvG1DLyliRS1Yf": ["Bazen", "Ezhel, Emel", "ab67616d00001e02ecd10eea07796a0edf4fb609", 231007],
+  "3yYHAwO4K7AYGyPCsObCtl": ["Nilüfer", "Müslüm Gürses", "ab67616d00001e02aa0eff59b6616372e724731b", 258159],
+  "1XhFmIIYWjHuovs2F4IpWj": ["İhtimallerin Heyecanına Üzülüyorum", "Büyük Ev Ablukada", "ab67616d00001e02f4eb595f01b1f9b693fa9dcd", 205434],
+  "3tCcO0uqXnoB8NnFuMPoIS": ["Aşktı Bu", "Redd", "ab67616d00001e02c53fb79c2bf2c7c6c513c0d7", 202280],
+  "6JLWscSAPrRHmZfHTWdC2u": ["Kimse Bilmez", "Mehmet Güreli", "ab67616d00001e020a3954f5712fa6bde742ff61", 205786],
+  "6iYxkBHyMpsgVxUgfy5fSx": ["ALL MY LOVE", "Coldplay", "ab67616d00001e02f40306925074cfdcd8bee61f", 222647],
+};
+
+let nowUri = null, lastDur = null, lastIdx = -1;
+const ORDER = Object.keys(TRACKS);
+
+// Giriş yapılıyken player şarkıyı değil playlist URI'sini bildiriyor; şarkıyı süresinden bul.
+// Süreleri yakın iki şarkı varsa playlist'te sıradaki olanı tercih et.
+function byDuration(ms) {
+  const c = ORDER.map((id, i) => ({ id, i, d: Math.abs(TRACKS[id][3] - ms) })).filter(x => x.d < 2000).sort((a, b) => a.d - b.d);
+  if (!c.length) return null;
+  const next = c.find(x => x.i === (lastIdx + 1) % ORDER.length);
+  return next && next.d - c[0].d < 600 ? next.id : c[0].id;
+}
+
+function showNow(uri, paused, duration) {
+  const now = document.getElementById("now");
+  now.classList.toggle("paused", !!paused);
+  if (!uri) return;
+  if (uri.startsWith("spotify:playlist:")) {
+    if (!duration || duration === lastDur) return;
+    const id = byDuration(duration);
+    if (!id) return;
+    lastDur = duration;
+    uri = "spotify:track:" + id;
+  }
+  if (uri === nowUri) return;
+  const first = nowUri === null;
+  nowUri = uri;
+  const idx = ORDER.indexOf(uri.split(":").pop());
+  if (idx >= 0) lastIdx = idx;
+  lookupTrack(uri).then(tr => { if (tr && uri === nowUri) render(tr, first); });
+}
+
+// Giriş yapılınca Spotify şarkıyı ülkeye göre farklı bir ID ile çalabiliyor;
+// listede yoksa adı/kapağı oEmbed'den alıp isimle eşleştir.
+const norm = s => s.toLocaleLowerCase("tr").replace(/\s*[-(].*$/, "").trim();
+const trackCache = {};
+async function lookupTrack(uri) {
+  const id = uri.split(":").pop();
+  if (TRACKS[id]) return { t: TRACKS[id][0], a: TRACKS[id][1], img: COVER + TRACKS[id][2] };
+  if (trackCache[id]) return trackCache[id];
+  try {
+    const r = await fetch(`https://open.spotify.com/oembed?url=https://open.spotify.com/track/${id}`);
+    const o = await r.json();
+    const hit = Object.values(TRACKS).find(x => norm(x[0]) === norm(o.title || ""));
+    return trackCache[id] = { t: hit ? hit[0] : o.title, a: hit ? hit[1] : "", img: o.thumbnail_url };
+  } catch (e) { console.warn("[spotify] şarkı bulunamadı", uri, e); return null; }
+}
+
+function render(tr, first) {
+  const now = document.getElementById("now");
+  const apply = () => {
+    document.getElementById("nowImg").src = tr.img;
+    document.getElementById("nowT").textContent = tr.t;
+    document.getElementById("nowA").textContent = tr.a;
+    now.classList.remove("swap");
+    now.classList.add("on");
+  };
+  if (first) apply();
+  else { now.classList.add("swap"); setTimeout(apply, 300); }
+}
 const STEP_MS = 9000;          // otomatik oynatmada foto başına süre
 const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 
@@ -325,7 +430,10 @@ stage.addEventListener("click", e => { if (e.target.closest(".card")) show(cur +
 let spotify = null;
 window.onSpotifyIframeApiReady = api => {
   if (isMobile()) return;   // telefonda gömülü player yok, Spotify uygulaması açılıyor
-  api.createController($("player"), { uri: PLAYLIST, width: "100%", height: 80 }, c => { spotify = c; });
+  api.createController($("player"), { uri: PLAYLIST, width: "100%", height: 80 }, c => {
+    spotify = c;
+    c.addListener("playback_update", e => showNow(e.data.playingURI, e.data.isPaused, e.data.duration));
+  });
 };
 
 $("go").onclick = () => {
