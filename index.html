@@ -30,8 +30,43 @@
   #globe { position: fixed; top: 0; left: 0; width: 140vw; height: 100vh; }
   @media (max-width: 760px) { #globe { width: 100vw; height: 156vh; } }
 
-  .label { transform: translate(-50%, -150%); padding: 3px 9px; border-radius: 8px; background: rgba(0,0,0,.6);
+  .label { padding: 3px 9px; border-radius: 8px; background: rgba(0,0,0,.6);
            font-size: 13px; font-weight: 500; white-space: nowrap; pointer-events: none; border: 1px solid var(--line); }
+
+  /* globe işaretçileri: kalpler + pati izleri (globe.gl dış div'i konumlar, içteki <i> bizim) */
+  .mk { position: relative; pointer-events: none; line-height: 1; }
+  .mk i { display: block; font-style: normal; }
+  .mk.heart i { color: var(--accent); font-size: 24px; text-shadow: 0 0 8px rgba(255,181,71,.8); }
+  .mk.cur i { color: var(--pink); font-size: 34px; text-shadow: 0 0 14px var(--pink); animation: beat 1.4s ease-in-out infinite; }
+  .mk.guess i { color: #7cc4ff; font-size: 30px; text-shadow: 0 0 12px #7cc4ff; }
+  .mk.cur .label { position: absolute; left: 50%; bottom: 125%; transform: translateX(-50%); }
+  .mk.dot i { font-size: 13px; }
+  .mk.dot.out i { color: var(--pink); text-shadow: 0 0 8px var(--pink); }
+  .mk.dot.back i { color: var(--accent); text-shadow: 0 0 8px var(--accent); }
+  .moon { width: 110px; height: 110px; border-radius: 50%;
+          background: radial-gradient(circle at 30% 28%, rgba(255,255,255,.85), transparent 38%),
+                      radial-gradient(circle at 62% 58%, #a29d92 0 8%, transparent 9%),
+                      radial-gradient(circle at 38% 68%, #a6a196 0 6%, transparent 7%),
+                      radial-gradient(circle at 72% 32%, #aaa59a 0 5%, transparent 6%),
+                      radial-gradient(circle at 48% 44%, #ece8de, #bfbaae 68%, #8d887d);
+          box-shadow: 0 0 40px rgba(255,240,210,.55), 0 0 100px rgba(255,240,210,.25); }
+  @media (max-width: 760px) { .moon { width: 70px; height: 70px; } }
+
+  /* final: love you to the moon and back */
+  .top .right { display: flex; align-items: center; }
+  .moonbtn { pointer-events: auto; width: 32px; height: 32px; border-radius: 50%; background: var(--glass); border: 1px solid var(--line); font-size: 15px; }
+  .moonbtn:hover { background: rgba(255,255,255,.14); }
+  .stage, .dock, .now { transition: opacity .8s; }
+  body.finale .stage, body.finale .dock, body.finale .now { opacity: 0; pointer-events: none; }
+  body.finale #globe { width: 100vw; height: 100vh; }
+  .moontext { position: fixed; left: 50%; top: 12vh; z-index: 6; transform: translate(-50%, 16px); opacity: 0; pointer-events: none;
+              text-align: center; transition: opacity 1.2s, transform 1.2s cubic-bezier(.2,.8,.2,1); width: calc(100vw - 32px); }
+  .moontext.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .moontext p { font-family: "Caveat", cursive; font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1.05; color: #fff3ea;
+                text-shadow: 0 0 24px rgba(255,107,139,.65); }
+  @media (max-width: 760px) { .moontext { top: auto; bottom: 7vh; } }
+  .moontext button { margin-top: 18px; padding: 10px 22px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); }
+  @keyframes beat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } }
 
   /* fotoğraf sahnesi */
   .stage { position: fixed; top: 0; left: 0; width: 58vw; height: 100vh; display: flex; align-items: center; justify-content: center;
@@ -116,16 +151,27 @@
   .start button:hover { filter: brightness(1.08); }
   .start.gone { opacity: 0; pointer-events: none; }
   /* tahmin */
-  body.guessing #globe { cursor: crosshair; }
+  body.guessing #globe { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 32 32'%3E%3Cpath d='M16 28s-11-7-11-15a6 6 0 0 1 11-3.3A6 6 0 0 1 27 13c0 8-11 15-11 15z' fill='%23ff6b8b' stroke='white' stroke-width='2'/%3E%3C/svg%3E") 10 18, pointer; }
   .toast { position: fixed; left: 70%; bottom: 170px; z-index: 4; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
            padding: 12px 22px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px);
            -webkit-backdrop-filter: blur(12px); font-weight: 500; white-space: nowrap; transition: opacity .4s, transform .4s cubic-bezier(.2,.8,.2,1); }
   .toast.on { opacity: 1; transform: translate(-50%, 0); }
   .toast b { color: var(--accent); }
   .cap .hint2 { font-size: .85rem; color: #8b8080; }
+  .cap .btns { display: flex; gap: 6px; }
+  .cap .tbtn { display: none; padding: 6px 14px; border-radius: 999px; background: var(--pink); color: #fff; font-size: .85rem; font-weight: 700; }
+  /* telefonda tahmin: foto köşeye küçülür, dünya tam ekran */
+  @media (max-width: 760px) {
+    .cap .tbtn { display: inline-block; }
+    .cap .hint2 { display: none; }
+    .stage { transition: transform .55s cubic-bezier(.2,.8,.2,1); }
+    body.mini .stage { transform: translate(-31vw, -17vh) scale(.3); }
+    body.mini .card { cursor: zoom-in; }
+    body.mini #globe { height: 100vh; }
+  }
   .cap .peek { padding: 6px 14px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .85rem; font-weight: 500; }
   .cap .peek:hover { background: var(--pink); }
-  @media (max-width: 760px) { .toast { left: 50%; bottom: 190px; font-size: .9rem; } }
+  @media (max-width: 760px) { .toast { left: 50%; bottom: auto; top: 64px; font-size: .9rem; } body.mini .toast { top: auto; bottom: 170px; } }
 </style>
 </head>
 <body>
@@ -134,8 +180,10 @@
 
 <div class="top">
   <div class="brand">You shot me down, beng beng</div>
-  <div class="num" id="num"></div>
+  <div class="right"><button class="moonbtn" id="moonBtn" title="to the moon and back">🌙</button><div class="num" id="num"></div></div>
 </div>
+
+<div class="moontext" id="moontext"><p>love you to the moon and back</p><button id="moonClose">Devam ✨</button></div>
 
 <div class="now" id="now">
   <img id="nowImg" alt="">
@@ -169,7 +217,6 @@
 <script>
 const PHOTOS = [{"src":"photos/01.jpg","date":"2018-01-21","city":"Amsterdam","region":"Hollanda","lat":52.37,"lng":4.89,"w":1536,"h":2046},{"src":"photos/02.jpg","date":"2018-01-23","city":"Brüksel","region":"Belçika","lat":50.85,"lng":4.36,"w":1536,"h":2046},{"src":"photos/04.jpg","date":"2018-01-24","city":"Brugge","region":"Belçika","lat":51.21,"lng":3.22,"w":2046,"h":1536},{"src":"photos/05.jpg","date":"2018-01-25","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":2046,"h":1536},{"src":"photos/06.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.35,"w":1536,"h":2046},{"src":"photos/07.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/08.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/09.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":1536,"h":2048},{"src":"photos/10.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/11.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/12.jpg","date":"2018-09-15","city":"Yedigöller","region":"Bolu","lat":40.94,"lng":31.75,"w":1536,"h":2048},{"src":"photos/13.jpg","date":"2019-04-04","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/14.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/15.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/16.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/17.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/18.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/19.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":2048,"h":1536},{"src":"photos/20.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/21.jpg","date":"2019-04-07","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/22.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/23.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/24.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/25.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":2046,"h":1536},{"src":"photos/26.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/27.jpg","date":"2019-04-10","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/28.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/29.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/30.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/31.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/32.jpg","date":"2021-11-20","city":"Ankara","region":"Türkiye","lat":39.87,"lng":32.7,"w":1536,"h":2048},{"src":"photos/33.jpg","date":"2022-02-13","city":"Münih","region":"Almanya","lat":48.18,"lng":11.53,"w":2048,"h":1536},{"src":"photos/34.jpg","date":"2022-10-31","city":"Münih","region":"Almanya","lat":48.13,"lng":11.58,"w":2048,"h":1536},{"src":"photos/35.jpg","date":"2023-04-07","city":"Verona","region":"İtalya","lat":45.45,"lng":11.0,"w":1536,"h":2048},{"src":"photos/36.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/37.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/38.jpg","date":"2024-11-20","city":"Münih","region":"Almanya","lat":48.13,"lng":11.59,"w":2048,"h":1536},{"src":"photos/39.jpg","date":"2025-12-01","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.49,"w":1536,"h":2048},{"src":"photos/40.jpg","date":"2025-12-03","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.56,"w":2048,"h":1536},{"src":"photos/41.jpg","date":"2025-12-04","city":"Chiang Mai","region":"Tayland","lat":18.79,"lng":98.99,"w":1536,"h":2048},{"src":"photos/42.jpg","date":"2025-12-06","city":"Chiang Mai","region":"Tayland","lat":19.21,"lng":98.86,"w":2048,"h":1536},{"src":"photos/43.jpg","date":"2025-12-08","city":"Krabi","region":"Tayland","lat":8.11,"lng":98.78,"w":2048,"h":1536},{"src":"photos/44.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":1536,"h":2048},{"src":"photos/45.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":2048,"h":1536},{"src":"photos/46.jpg","date":"2025-12-10","city":"Phi Phi","region":"Tayland","lat":7.68,"lng":98.77,"w":1536,"h":2048},{"src":"photos/47.jpg","date":"2025-12-12","city":"Bangkok","region":"Tayland","lat":13.73,"lng":100.58,"w":2048,"h":1536},{"src":"photos/48.jpg","date":"2026-02-21","city":"İstanbul","region":"Türkiye","lat":41.02,"lng":28.97,"w":1536,"h":2048},{"src":"photos/49.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/50.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/51.jpg","date":"2026-03-16","city":"Londra","region":"İngiltere","lat":51.5,"lng":-0.14,"w":2048,"h":1536},{"src":"photos/52.jpg","date":"2026-03-17","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.09,"w":2048,"h":1536},{"src":"photos/53.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":2048,"h":1536},{"src":"photos/54.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":1536,"h":2048},{"src":"photos/55.jpg","date":"2026-03-25","city":"Edinburgh","region":"İskoçya","lat":55.95,"lng":-3.22,"w":2048,"h":1536},{"src":"photos/56.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":1536,"h":2048},{"src":"photos/57.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":2048,"h":1536},{"src":"photos/58.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":1536,"h":2048},{"src":"photos/59.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":2048,"h":1536},{"src":"photos/60.jpg","date":"2026-09-14","city":"Gaziantep","region":"Türkiye","lat":37.07,"lng":37.38,"w":2048,"h":1536},{"src":"photos/61.jpg","date":"2026-09-15","city":"Şanlıurfa","region":"Türkiye","lat":37.15,"lng":38.79,"w":2048,"h":1536},{"src":"photos/62.jpg","date":"2026-09-16","city":"Mardin","region":"Türkiye","lat":37.31,"lng":40.74,"w":2048,"h":1536}];
 // her açılışta karışık sıra: sıradaki şehir tahmin edilemesin
-const CHRONO = PHOTOS.slice();   // gerçek (tarih) sırası: rota bununla çizilir
 for (let i = PHOTOS.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [PHOTOS[i], PHOTOS[j]] = [PHOTOS[j], PHOTOS[i]]; }
 const PLAYLIST = "spotify:playlist:0QIMADjQtN9GnuYD6gvrHE";
 const COVER = "https://i.scdn.co/image/";
@@ -286,7 +333,15 @@ const world = Globe()(globeEl)
   .ringColor(() => t => `rgba(255,107,139,${1 - t})`)
   .ringMaxRadius(2.6).ringPropagationSpeed(1.6).ringRepeatPeriod(1100)
   .htmlElementsData([])
-  .htmlElement(d => { const el = document.createElement("div"); el.className = "label"; el.textContent = d.city; return el; });
+  .htmlTransitionDuration(0)
+  .htmlAltitude(d => d.alt || 0)
+  .htmlElement(d => {
+    const el = document.createElement("div");
+    el.className = "mk " + d.kind + (d.dir ? " " + d.dir : "");
+    el.innerHTML = d.kind === "moon" ? '<div class="moon"></div>'
+      : `<i>♥</i>` + (d.kind === "cur" ? `<span class="label">${d.city}</span>` : "");
+    return el;
+  });
 
 world.controls().autoRotate = true;
 world.controls().autoRotateSpeed = 0.5;
@@ -338,7 +393,7 @@ function makeCard(p, hidden = false) {
   const el = document.createElement("figure");
   el.className = "card enter";
   el.innerHTML = `<img src="${p.src}" width="${p.w}" height="${p.h}" alt="">
-    <figcaption class="cap">${hidden ? '<span><span class="city">Burası neresi?</span><br><span class="hint2">haritada tahmin et 👆</span></span><button class="peek">Göster 👀</button>' : captionHTML(p)}</figcaption>`;
+    <figcaption class="cap">${hidden ? '<span><span class="city">Burası neresi?</span><br><span class="hint2">haritada tahmin et 👆</span></span><span class="btns"><button class="tbtn">🌍 Tahmin et</button><button class="peek">Göster 👀</button></span>' : captionHTML(p)}</figcaption>`;
   return el;
 }
 
@@ -367,13 +422,18 @@ let hidden = false, fromP = null, score = 0;
 const revealed = new Set();   // cevabı görülmüş fotoğraflar (index); her foto ayrı bir tahmin
 const seenCities = new Set();  // cevabı görülmüş şehirler
 
-// gerçek rota: açılmış şehirler, gerçekten gidildiği (tarih) sırayla bağlanır
-function routeArcs() {
-  const stops = [];
-  CHRONO.forEach(q => { if (seenCities.has(cityKey(q)) && stops.at(-1)?.city !== q.city) stops.push(q); });
-  return stops.slice(1).map((q, k) => ({ startLat: stops[k].lat, startLng: stops[k].lng, endLat: q.lat, endLng: q.lng }));
+// rota: açılan her foto, ondan önce açılan fotonun yerine bağlanır (ekrandaki sıra)
+const path = [];
+function routeArcs(lastIsNew = false) {
+  return path.slice(1).map((q, k) => ({ startLat: path[k].lat, startLng: path[k].lng, endLat: q.lat, endLng: q.lng,
+    cur: lastIsNew && k === path.length - 2 }));
 }
-function cityDots() { return [...new Map(CHRONO.filter(q => seenCities.has(cityKey(q))).map(q => [cityKey(q), q])).values()]; }
+
+function markers(extra = []) {
+  const hearts = cityDots().filter(q => !extra.some(e => e.city === q.city)).map(q => ({ kind: "heart", lat: q.lat, lng: q.lng, city: q.city }));
+  return [...hearts, ...extra];
+}
+function cityDots() { return [...new Map(PHOTOS.filter(q => seenCities.has(cityKey(q))).map(q => [cityKey(q), q])).values()]; }
 
 function markTicks() {
   document.querySelectorAll(".tick").forEach((t, k) => { t.classList.toggle("past", revealed.has(k)); t.classList.toggle("cur", k === cur); });
@@ -384,6 +444,8 @@ function updateNum() {
 }
 
 function show(i) {
+  // son fotodan sonra ileri: final (tahmin/açma zorunlu değil)
+  if (i >= PHOTOS.length && cur === PHOTOS.length - 1) { finale(true); return; }
   i = (i + PHOTOS.length) % PHOTOS.length;
   if (i === cur) return;
   const dir = i > cur ? 1 : -1;
@@ -394,6 +456,7 @@ function show(i) {
 
   // cevabı henüz görülmemiş foto: yer gizli, tahmin et ya da "Göster"
   hidden = !revealed.has(i);
+  setMini(false);
   document.body.classList.toggle("guessing", hidden);
   swapCard(makeCard(p, hidden), dir);
 
@@ -403,24 +466,32 @@ function show(i) {
 
   world.controls().autoRotate = false;
   if (hidden) {
-    world.pointsData(cityDots()).arcsData(routeArcs()).ringsData([]).htmlElementsData([]);
+    world.pointsData([]).arcsData(routeArcs()).ringsData([]).htmlElementsData(markers());
     const v = world.pointOfView();
     world.pointOfView({ lat: v.lat, lng: v.lng, altitude: Math.max(v.altitude, isMobile() ? 2.6 : 2.0) }, 1000);
   } else reveal();
 }
 
+function setMini(v) {
+  if (document.body.classList.contains("mini") === v) return;
+  document.body.classList.toggle("mini", v);
+  fit();
+}
+
 function reveal(guess) {
-  const p = PHOTOS[cur];
+  setMini(false);
+  const p = PHOTOS[cur], fresh = hidden;
   if (hidden) card.querySelector(".cap").innerHTML = captionHTML(p);
   hidden = false;
   document.body.classList.remove("guessing");
   revealed.add(cur);
   seenCities.add(cityKey(p));
   markTicks();
-  const from = guess || fromP;
-  const arcs = from && (guess || cityKey(from) !== cityKey(p))
-    ? [{ startLat: from.lat, startLng: from.lng, endLat: p.lat, endLng: p.lng, cur: true, guess: !!guess }] : [];
-  world.pointsData([...cityDots(), ...(guess ? [guess] : [])]).arcsData([...routeArcs(), ...arcs]).ringsData([p]).htmlElementsData([p]);
+  const grew = fresh && path.at(-1)?.city !== p.city;   // aynı şehir arka arkaya: çizgi yok
+  if (grew) path.push(p);
+  const arcs = guess ? [{ startLat: guess.lat, startLng: guess.lng, endLat: p.lat, endLng: p.lng, cur: true, guess: true }] : [];
+  world.pointsData([]).arcsData([...routeArcs(grew), ...arcs]).ringsData([p])
+    .htmlElementsData(markers([{ kind: "cur", lat: p.lat, lng: p.lng, city: p.city }, ...(guess ? [{ kind: "guess", lat: guess.lat, lng: guess.lng }] : [])]));
   const flight = flyTo(p, guess || fromP);
   scheduleNext(flight + (guess ? 3000 : 0));
 }
@@ -453,7 +524,7 @@ globeEl.addEventListener("pointerdown", e => {
 addEventListener("pointerup", e => {
   fingers = Math.max(0, fingers - 1);
   const d = down; down = null;
-  if (!d || !hidden || e.button !== 0) return;
+  if (!d || !hidden || finaleOn || e.button !== 0) return;
   if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 6 || Date.now() - d.t > 700) return;
   const r = globeEl.getBoundingClientRect();
   const c = world.toGlobeCoords(e.clientX - r.left, e.clientY - r.top);
@@ -497,6 +568,7 @@ $("prev").onclick = () => show(cur - 1);
 $("next").onclick = () => show(cur + 1);
 $("play").onclick = () => setPlaying(!playing);
 addEventListener("keydown", e => {
+  if (finaleOn) return;
   if (e.key === "ArrowRight") show(cur + 1);
   else if (e.key === "ArrowLeft") show(cur - 1);
   else if (e.key === " ") { e.preventDefault(); setPlaying(!playing); }
@@ -505,12 +577,14 @@ addEventListener("keydown", e => {
 let sx = null;
 stage.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
 stage.addEventListener("touchend", e => {
-  if (sx === null) return;
+  if (sx === null || document.body.classList.contains("mini")) return;
   const dx = e.changedTouches[0].clientX - sx; sx = null;
   if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1));
 });
 stage.addEventListener("click", e => {
-  if (e.target.closest(".peek")) reveal();
+  if (document.body.classList.contains("mini")) { if (e.target.closest(".card")) setMini(false); return; }   // küçük fotoya dokun: tekrar bak
+  if (e.target.closest(".tbtn")) { setMini(true); toast("Dünyada bir yere dokun 👆"); }
+  else if (e.target.closest(".peek")) reveal();
   else if (e.target.closest(".card") && !hidden) show(cur + 1);
 });
 
@@ -523,6 +597,56 @@ function km(a, b) {
 }
 const points = d => Math.round(5000 * Math.exp(-d / 1500));
 const fmt = n => n.toLocaleString("tr-TR");
+
+// ---------- final: love you to the moon and back ----------
+let finaleOn = false, finaleTimer = null, finaleWrap = false;
+function finale(wrap = false) {
+  if (finaleOn) return;
+  finaleOn = true;
+  finaleWrap = wrap;   // son fotodan gelindiyse "Devam" baştan başlatır
+  setPlaying(false);
+  clearTimeout(flyTimer);
+  document.body.classList.add("finale");
+  fit();
+  const from = path.at(-1) || PHOTOS[Math.max(cur, 0)];
+  // masaüstünde ay sağ üstte, telefonda (dikey ekran) tam yukarıda
+  const mob = isMobile();
+  const moon = { kind: "moon", lat: Math.min(80, from.lat + (mob ? 38 : 20)), lng: from.lng + (mob ? 22 : 50), alt: mob ? 1.6 : 2.0 };
+  const base = [...markers(), moon];
+  world.arcsData(routeArcs()).ringsData([]).htmlElementsData(base);
+  world.pointOfView({ lat: (from.lat + moon.lat) / 2, lng: (from.lng + moon.lng) / 2, altitude: mob ? 7 : 5.2 }, 2500);
+
+  // ay da bir şehirmiş gibi: kalplerle gidiş, sonra dönüş
+  const N = 34, dots = [];
+  // dönüş yolu, gidişin yanından (yola dik yönde) kayık geçsin
+  const dLa = moon.lat - from.lat, dLo = moon.lng - from.lng, len = Math.hypot(dLa, dLo) || 1;
+  const pLa = -dLo / len * 6, pLo = dLa / len * 6;
+  const at = (t, dir) => { const s = dir === "back" ? Math.sin(Math.PI * t) : 0;
+    return { kind: "dot", dir, lat: from.lat + dLa * t + pLa * s, lng: from.lng + dLo * t + pLo * s, alt: moon.alt * Math.sin(t * Math.PI / 2) }; };
+  let k = 0;
+  const step = () => {
+    if (!finaleOn) return;
+    if (k < N) dots.push(at((k + 1) / (N + 1), "out"));
+    else if (k < 2 * N) dots.push(at(1 - (k - N + 1) / (N + 1), "back"));
+    else { $("moontext").classList.add("on"); return; }
+    k++;
+    world.htmlElementsData([...base, ...dots]);
+    finaleTimer = setTimeout(step, 75);
+  };
+  finaleTimer = setTimeout(step, 2600);
+}
+function endFinale() {
+  finaleOn = false;
+  clearTimeout(finaleTimer);
+  $("moontext").classList.remove("on");
+  document.body.classList.remove("finale");
+  fit();
+  const i = finaleWrap ? 0 : Math.max(cur, 0);
+  cur = -1;
+  show(i);
+}
+$("moonBtn").onclick = () => finaleOn ? endFinale() : finale();
+$("moonClose").onclick = endFinale;
 
 // ---------- müzik (fotoğraflardan bağımsız) ----------
 let spotify = null;
