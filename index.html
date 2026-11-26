@@ -56,8 +56,8 @@
   /* üst bar */
   .top { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center;
          padding: 16px 20px; pointer-events: none; }
-  .brand { font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
-  .num { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 500; }
+  .brand { font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .num { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 500; white-space: nowrap; flex: none; margin-left: 12px; }
 
   /* alt kontroller */
   .dock { position: fixed; left: 16px; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -69,12 +69,10 @@
 
   .timeline { position: relative; flex: 1; height: 44px; border-radius: 22px; background: var(--glass); border: 1px solid var(--line);
               backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 0 18px; cursor: pointer; touch-action: none; }
-  .ticks { position: absolute; left: 18px; right: 18px; top: 9px; height: 12px; display: flex; gap: 2px; }
+  .ticks { position: absolute; left: 18px; right: 18px; top: 16px; height: 12px; display: flex; gap: 2px; }
   .tick { flex: 1; border-radius: 2px; background: rgba(255,255,255,.18); transition: background .3s; }
   .tick.past { background: rgba(255,181,71,.55); }
   .tick.cur { background: var(--pink); transform: scaleY(1.5); }
-  .years { position: absolute; left: 18px; right: 18px; bottom: 5px; height: 14px; font-size: 10px; color: var(--muted); }
-  .years span { position: absolute; transform: translateX(-2px); }
 
   #player { width: 300px; height: 80px; border-radius: 12px; overflow: hidden; flex: none; }
 
@@ -117,6 +115,17 @@
   .start button { margin-top: 12px; padding: 14px 30px; border-radius: 999px; background: var(--accent); color: #1a1208; font-weight: 700; font-size: 1.05rem; }
   .start button:hover { filter: brightness(1.08); }
   .start.gone { opacity: 0; pointer-events: none; }
+  /* tahmin */
+  body.guessing #globe { cursor: crosshair; }
+  .toast { position: fixed; left: 70%; bottom: 170px; z-index: 4; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+           padding: 12px 22px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(12px);
+           -webkit-backdrop-filter: blur(12px); font-weight: 500; white-space: nowrap; transition: opacity .4s, transform .4s cubic-bezier(.2,.8,.2,1); }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .toast b { color: var(--accent); }
+  .cap .hint2 { font-size: .85rem; color: #8b8080; }
+  .cap .peek { padding: 6px 14px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: .85rem; font-weight: 500; }
+  .cap .peek:hover { background: var(--pink); }
+  @media (max-width: 760px) { .toast { left: 50%; bottom: 190px; font-size: .9rem; } }
 </style>
 </head>
 <body>
@@ -137,12 +146,14 @@
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <div class="dock">
   <div class="row main">
     <button class="ctrl" id="prev" aria-label="önceki"><svg viewBox="0 0 24 24"><path d="M15.5 4 7.5 12l8 8 1.4-1.4L10.3 12l6.6-6.6z"/></svg></button>
     <button class="ctrl" id="play" aria-label="oynat/durdur"></button>
     <button class="ctrl" id="next" aria-label="sonraki"><svg viewBox="0 0 24 24"><path d="M8.5 4 7.1 5.4l6.6 6.6-6.6 6.6L8.5 20l8-8z"/></svg></button>
-    <div class="timeline" id="timeline"><div class="ticks" id="ticks"></div><div class="years" id="years"></div></div>
+    <div class="timeline" id="timeline"><div class="ticks" id="ticks"></div></div>
   </div>
   <div class="row"><div id="player"></div><a class="listen" href="https://open.spotify.com/playlist/0QIMADjQtN9GnuYD6gvrHE" target="_blank" rel="noopener">🎧 Müziği Spotify'da aç</a></div>
 </div>
@@ -157,6 +168,9 @@
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.1/dist/globe.gl.min.js"></script>
 <script>
 const PHOTOS = [{"src":"photos/01.jpg","date":"2018-01-21","city":"Amsterdam","region":"Hollanda","lat":52.37,"lng":4.89,"w":1536,"h":2046},{"src":"photos/02.jpg","date":"2018-01-23","city":"Brüksel","region":"Belçika","lat":50.85,"lng":4.36,"w":1536,"h":2046},{"src":"photos/03.jpg","date":"2018-01-24","city":"Brugge","region":"Belçika","lat":51.21,"lng":3.23,"w":1280,"h":960},{"src":"photos/04.jpg","date":"2018-01-24","city":"Brugge","region":"Belçika","lat":51.21,"lng":3.22,"w":2046,"h":1536},{"src":"photos/05.jpg","date":"2018-01-25","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":2046,"h":1536},{"src":"photos/06.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.35,"w":1536,"h":2046},{"src":"photos/07.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/08.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/09.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":1536,"h":2048},{"src":"photos/10.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/11.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/12.jpg","date":"2018-09-15","city":"Yedigöller","region":"Bolu","lat":40.94,"lng":31.75,"w":1536,"h":2048},{"src":"photos/13.jpg","date":"2019-04-04","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/14.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/15.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/16.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/17.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/18.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/19.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":2048,"h":1536},{"src":"photos/20.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/21.jpg","date":"2019-04-07","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/22.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/23.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/24.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/25.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":2046,"h":1536},{"src":"photos/26.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/27.jpg","date":"2019-04-10","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/28.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/29.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/30.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/31.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/32.jpg","date":"2021-11-20","city":"Ankara","region":"Türkiye","lat":39.87,"lng":32.7,"w":1536,"h":2048},{"src":"photos/33.jpg","date":"2022-02-13","city":"Münih","region":"Almanya","lat":48.18,"lng":11.53,"w":2048,"h":1536},{"src":"photos/34.jpg","date":"2022-10-31","city":"Münih","region":"Almanya","lat":48.13,"lng":11.58,"w":2048,"h":1536},{"src":"photos/35.jpg","date":"2023-04-07","city":"Verona","region":"İtalya","lat":45.45,"lng":11.0,"w":1536,"h":2048},{"src":"photos/36.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/37.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/38.jpg","date":"2024-11-20","city":"Münih","region":"Almanya","lat":48.13,"lng":11.59,"w":2048,"h":1536},{"src":"photos/39.jpg","date":"2025-12-01","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.49,"w":1536,"h":2048},{"src":"photos/40.jpg","date":"2025-12-03","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.56,"w":2048,"h":1536},{"src":"photos/41.jpg","date":"2025-12-04","city":"Chiang Mai","region":"Tayland","lat":18.79,"lng":98.99,"w":1536,"h":2048},{"src":"photos/42.jpg","date":"2025-12-06","city":"Chiang Mai","region":"Tayland","lat":19.21,"lng":98.86,"w":2048,"h":1536},{"src":"photos/43.jpg","date":"2025-12-08","city":"Krabi","region":"Tayland","lat":8.11,"lng":98.78,"w":2048,"h":1536},{"src":"photos/44.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":1536,"h":2048},{"src":"photos/45.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":2048,"h":1536},{"src":"photos/46.jpg","date":"2025-12-10","city":"Phi Phi","region":"Tayland","lat":7.68,"lng":98.77,"w":1536,"h":2048},{"src":"photos/47.jpg","date":"2025-12-12","city":"Bangkok","region":"Tayland","lat":13.73,"lng":100.58,"w":2048,"h":1536},{"src":"photos/48.jpg","date":"2026-02-21","city":"İstanbul","region":"Türkiye","lat":41.02,"lng":28.97,"w":1536,"h":2048},{"src":"photos/49.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/50.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/51.jpg","date":"2026-03-16","city":"Londra","region":"İngiltere","lat":51.5,"lng":-0.14,"w":2048,"h":1536},{"src":"photos/52.jpg","date":"2026-03-17","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.09,"w":2048,"h":1536},{"src":"photos/53.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":2048,"h":1536},{"src":"photos/54.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":1536,"h":2048},{"src":"photos/55.jpg","date":"2026-03-25","city":"Edinburgh","region":"İskoçya","lat":55.95,"lng":-3.22,"w":2048,"h":1536},{"src":"photos/56.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":1536,"h":2048},{"src":"photos/57.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":2048,"h":1536},{"src":"photos/58.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":1536,"h":2048},{"src":"photos/59.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":2048,"h":1536},{"src":"photos/60.jpg","date":"2026-09-14","city":"Gaziantep","region":"Türkiye","lat":37.07,"lng":37.38,"w":2048,"h":1536},{"src":"photos/61.jpg","date":"2026-09-15","city":"Şanlıurfa","region":"Türkiye","lat":37.15,"lng":38.79,"w":2048,"h":1536},{"src":"photos/62.jpg","date":"2026-09-16","city":"Mardin","region":"Türkiye","lat":37.31,"lng":40.74,"w":2048,"h":1536}];
+// her açılışta karışık sıra: sıradaki şehir tahmin edilemesin
+const CHRONO = PHOTOS.slice();   // gerçek (tarih) sırası: rota bununla çizilir
+for (let i = PHOTOS.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [PHOTOS[i], PHOTOS[j]] = [PHOTOS[j], PHOTOS[i]]; }
 const PLAYLIST = "spotify:playlist:0QIMADjQtN9GnuYD6gvrHE";
 const COVER = "https://i.scdn.co/image/";
 const TRACKS = {
@@ -244,30 +258,26 @@ const isMobile = () => matchMedia("(max-width: 760px)").matches;
 
 // ---------- şehirler & rota ----------
 const cityKey = p => p.city;
-const cities = [...new Map(PHOTOS.map(p => [cityKey(p), p])).values()];
-// ardışık farklı şehirler arası uçuşlar
-const legs = [];
-PHOTOS.forEach((p, i) => {
-  const q = PHOTOS[i - 1];
-  if (q && cityKey(q) !== cityKey(p)) legs.push({ at: i, startLat: q.lat, startLng: q.lng, endLat: p.lat, endLng: p.lng });
-});
 
 
 // ---------- globe ----------
 const globeEl = $("globe");
 const world = Globe()(globeEl)
   .globeImageUrl(IMG + "earth-night.jpg")
+  // yakınlaştıkça daha detaylı karolar (NASA VIIRS Black Marble, max seviye 8)
+  .globeTileEngineUrl((x, y, l) => `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/${l}/${y}/${x}.png`)
+  .globeTileEngineMaxLevel(8)
   .bumpImageUrl(IMG + "earth-topology.png")
   .backgroundImageUrl(IMG + "night-sky.png")
   .atmosphereColor("#ff9db0")
   .atmosphereAltitude(0.18)
-  .pointsData(cities)
+  .pointsData([])
   .pointLat("lat").pointLng("lng")
-  .pointColor(() => "#ffb547")
+  .pointColor(d => d.guess ? "#7cc4ff" : d.answer ? "#ff6b8b" : "#ffb547")
   .pointAltitude(0.005)
-  .pointRadius(0.22)
-  .arcColor(d => d.cur ? ["#ffb547", "#ff6b8b"] : "rgba(255,181,71,.28)")
-  .arcStroke(d => d.cur ? 0.7 : 0.3)
+  .pointRadius(d => d.guess || d.answer ? 0.45 : 0.22)
+  .arcColor(d => d.guess ? ["#7cc4ff", "#ff6b8b"] : d.cur ? ["#ffb547", "#ff6b8b"] : "rgba(255,181,71,.55)")
+  .arcStroke(d => d.cur ? 0.7 : 0.45)
   .arcDashLength(d => d.cur ? 0.45 : 1)
   .arcDashGap(d => d.cur ? 0.15 : 0)
   .arcDashInitialGap(d => d.cur ? 1 : 0)
@@ -280,7 +290,7 @@ const world = Globe()(globeEl)
 
 world.controls().autoRotate = true;
 world.controls().autoRotateSpeed = 0.5;
-world.controls().enableZoom = false;
+world.controls().enableZoom = true;
 world.pointOfView({ lat: 35, lng: 30, altitude: 2.6 });
 
 function fit() { world.width(globeEl.clientWidth).height(globeEl.clientHeight); }
@@ -318,25 +328,23 @@ function special(s) {
   return "";
 }
 
-function makeCard(p) {
+function captionHTML(p) {
+  const sp = special(p.date);
+  return `<span class="city">${p.city}<small>${p.region}</small></span>
+    <span class="when">${sp ? `<b>${sp}</b>` : ""}${fmtDate(p.date)}</span>`;
+}
+
+function makeCard(p, hidden = false) {
   const el = document.createElement("figure");
   el.className = "card enter";
-  const sp = special(p.date);
-  el.innerHTML = `<img src="${p.src}" width="${p.w}" height="${p.h}" alt="${p.city}">
-    <figcaption class="cap"><span class="city">${p.city}<small>${p.region}</small></span>
-    <span class="when">${sp ? `<b>${sp}</b>` : ""}${fmtDate(p.date)}</span></figcaption>`;
+  el.innerHTML = `<img src="${p.src}" width="${p.w}" height="${p.h}" alt="">
+    <figcaption class="cap">${hidden ? '<span><span class="city">Burası neresi?</span><br><span class="hint2">haritada tahmin et 👆</span></span><button class="peek">Göster 👀</button>' : captionHTML(p)}</figcaption>`;
   return el;
 }
 
 const rnd = (a, b) => a + Math.random() * (b - a);
 
-function show(i) {
-  i = (i + PHOTOS.length) % PHOTOS.length;
-  if (i === cur) return;
-  const dir = i > cur ? 1 : -1;
-  const prev = PHOTOS[cur], p = PHOTOS[i];
-  cur = i;
-
+function swapCard(el, dir) {
   // eski kart: yön tarafına savrulur
   if (card) {
     const old = card;
@@ -345,7 +353,6 @@ function show(i) {
     setTimeout(() => old.remove(), 950);
   }
   // yeni kart: masaya atılmış gibi düşer
-  const el = makeCard(p);
   const rot = rnd(-3.5, 3.5);
   el.style.transform = `translate(${dir * 30}vw, 10vh) rotate(${dir * 18}deg) scale(.85)`;
   stage.appendChild(el);
@@ -354,23 +361,105 @@ function show(i) {
     el.style.transform = `rotate(${rot}deg)`;
   }));
   card = el;
+}
 
-  // globe
-  const flight = flyTo(p, prev);
-  world.ringsData([p]);
-  world.htmlElementsData([p]);
-  world.arcsData(legs.filter(l => l.at <= i).map(l => ({ ...l, cur: l.at === i && prev && cityKey(prev) !== cityKey(p) })));
-  world.controls().autoRotate = false;
+let hidden = false, fromP = null, score = 0;
+const revealed = new Set();   // cevabı görülmüş fotoğraflar (index); her foto ayrı bir tahmin
+const seenCities = new Set();  // cevabı görülmüş şehirler
 
-  // UI
-  $("num").textContent = `${String(i + 1).padStart(2, "0")} / ${PHOTOS.length}`;
-  document.querySelectorAll(".tick").forEach((t, k) => { t.classList.toggle("past", k < i); t.classList.toggle("cur", k === i); });
+// gerçek rota: açılmış şehirler, gerçekten gidildiği (tarih) sırayla bağlanır
+function routeArcs() {
+  const stops = [];
+  CHRONO.forEach(q => { if (seenCities.has(cityKey(q)) && stops.at(-1)?.city !== q.city) stops.push(q); });
+  return stops.slice(1).map((q, k) => ({ startLat: stops[k].lat, startLng: stops[k].lng, endLat: q.lat, endLng: q.lng }));
+}
+function cityDots() { return [...new Map(CHRONO.filter(q => seenCities.has(cityKey(q))).map(q => [cityKey(q), q])).values()]; }
 
-  // sonraki fotoları önceden yükle
+function markTicks() {
+  document.querySelectorAll(".tick").forEach((t, k) => { t.classList.toggle("past", revealed.has(k)); t.classList.toggle("cur", k === cur); });
+}
+
+function updateNum() {
+  $("num").textContent = `${String(cur + 1).padStart(2, "0")} / ${PHOTOS.length}` + (score ? ` · 🎯 ${fmt(score)}` : "");
+}
+
+function show(i) {
+  i = (i + PHOTOS.length) % PHOTOS.length;
+  if (i === cur) return;
+  const dir = i > cur ? 1 : -1;
+  const prev = PHOTOS[cur], p = PHOTOS[i];
+  cur = i;
+  fromP = prev;
+  clearTimeout(nextTimer); clearTimeout(flyTimer);
+
+  // cevabı henüz görülmemiş foto: yer gizli, tahmin et ya da "Göster"
+  hidden = !revealed.has(i);
+  document.body.classList.toggle("guessing", hidden);
+  swapCard(makeCard(p, hidden), dir);
+
+  updateNum();
+  markTicks();
   [1, 2].forEach(k => { const n = PHOTOS[(i + k) % PHOTOS.length]; if (n) new Image().src = n.src; });
 
-  scheduleNext(flight);
+  world.controls().autoRotate = false;
+  if (hidden) {
+    world.pointsData(cityDots()).arcsData(routeArcs()).ringsData([]).htmlElementsData([]);
+    const v = world.pointOfView();
+    world.pointOfView({ lat: v.lat, lng: v.lng, altitude: Math.max(v.altitude, isMobile() ? 2.6 : 2.0) }, 1000);
+  } else reveal();
 }
+
+function reveal(guess) {
+  const p = PHOTOS[cur];
+  if (hidden) card.querySelector(".cap").innerHTML = captionHTML(p);
+  hidden = false;
+  document.body.classList.remove("guessing");
+  revealed.add(cur);
+  seenCities.add(cityKey(p));
+  markTicks();
+  const from = guess || fromP;
+  const arcs = from && (guess || cityKey(from) !== cityKey(p))
+    ? [{ startLat: from.lat, startLng: from.lng, endLat: p.lat, endLng: p.lng, cur: true, guess: !!guess }] : [];
+  world.pointsData([...cityDots(), ...(guess ? [guess] : [])]).arcsData([...routeArcs(), ...arcs]).ringsData([p]).htmlElementsData([p]);
+  const flight = flyTo(p, guess || fromP);
+  scheduleNext(flight + (guess ? 3000 : 0));
+}
+
+let toastTimer = null;
+function toast(html) {
+  $("toast").innerHTML = html;
+  $("toast").classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $("toast").classList.remove("on"), 4500);
+}
+
+function guessAt(lat, lng) {
+  if (!hidden) return;
+  const p = PHOTOS[cur], g = { lat, lng, city: "tahminin", guess: true };
+  const d = km(g, p), pts = points(d);
+  score += pts;
+  updateNum();
+  toast(d < 25 ? `🎯 Tam isabet! <b>+${fmt(pts)}</b>` : `🎯 ${p.city}: ${fmt(Math.round(d))} km uzaktaydın · <b>+${fmt(pts)}</b>`);
+  reveal(g);
+}
+
+// tek tık: tahmin + cevap. globe.gl fareyle 1px kıpırdamayı bile sürükleme sayıp tıkı yutuyor;
+// tıkı kendimiz algılıyoruz (6px tolerans, tek parmak).
+let down = null, fingers = 0;
+globeEl.addEventListener("pointerdown", e => {
+  fingers++;
+  down = fingers === 1 ? { x: e.clientX, y: e.clientY, t: Date.now() } : null;
+});
+addEventListener("pointerup", e => {
+  fingers = Math.max(0, fingers - 1);
+  const d = down; down = null;
+  if (!d || !hidden || e.button !== 0) return;
+  if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 6 || Date.now() - d.t > 700) return;
+  const r = globeEl.getBoundingClientRect();
+  const c = world.toGlobeCoords(e.clientX - r.left, e.clientY - r.top);
+  if (c) guessAt(c.lat, c.lng);
+});
+addEventListener("pointercancel", () => { fingers = 0; down = null; });
 
 // ---------- otomatik oynatma ----------
 let playing = false, nextTimer = null;
@@ -386,16 +475,12 @@ function scheduleNext(flight = 0) {
 function setPlaying(v) {
   playing = v;
   $("play").innerHTML = v ? ICON_PAUSE : ICON_PLAY;
-  if (v) scheduleNext(); else clearTimeout(nextTimer);
+  if (v) { if (!hidden) scheduleNext(); } else clearTimeout(nextTimer);
 }
 setPlaying(false);
 
 // ---------- timeline ----------
 $("ticks").innerHTML = PHOTOS.map(() => '<div class="tick"></div>').join("");
-$("years").innerHTML = PHOTOS.map((p, i) => [p, i]).filter(([p, i]) => i === 0 || p.date.slice(0, 4) !== PHOTOS[i - 1].date.slice(0, 4))
-  .map(([p, i]) => [p, i / PHOTOS.length * 100])
-  .reduce((shown, y) => (!shown.length || y[1] - shown.at(-1)[1] >= 7 ? [...shown, y] : shown), [])   // üst üste binmesin
-  .map(([p, x]) => `<span style="left:${x}%">${p.date.slice(2, 4)}'</span>`).join("");
 
 const tl = $("timeline");
 function tlIndex(e) {
@@ -424,7 +509,20 @@ stage.addEventListener("touchend", e => {
   const dx = e.changedTouches[0].clientX - sx; sx = null;
   if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1));
 });
-stage.addEventListener("click", e => { if (e.target.closest(".card")) show(cur + 1); });
+stage.addEventListener("click", e => {
+  if (e.target.closest(".peek")) reveal();
+  else if (e.target.closest(".card") && !hidden) show(cur + 1);
+});
+
+// ---------- mesafe & puan ----------
+const toRad = x => x * Math.PI / 180;
+function km(a, b) {
+  const dLa = toRad(b.lat - a.lat), dLo = toRad(b.lng - a.lng);
+  const h = Math.sin(dLa / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLo / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+const points = d => Math.round(5000 * Math.exp(-d / 1500));
+const fmt = n => n.toLocaleString("tr-TR");
 
 // ---------- müzik (fotoğraflardan bağımsız) ----------
 let spotify = null;
