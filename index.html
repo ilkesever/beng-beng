@@ -2,146 +2,326 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bengü · 5. Yılımız</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beng Beng Turu</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&display=swap&subset=latin-ext" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream: #fbf6f0;
-    --blush: #f4e1dc;
-    --rose: #c56b72;
-    --rose-deep: #9c4a53;
-    --ink: #4a3a3a;
-    --muted: #8a7470;
+    --bg: #05060d;
+    --glass: rgba(14, 16, 30, .72);
+    --line: rgba(255,255,255,.12);
+    --text: #f2efe9;
+    --muted: #9a98a8;
+    --accent: #ffb547;
+    --pink: #ff6b8b;
+    --paper: #fbf8f2;
+    --ink: #2a2424;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: radial-gradient(ellipse at top, var(--blush) 0%, var(--cream) 60%) fixed;
-    color: var(--ink);
-    font-family: "Cormorant Garamond", Georgia, serif;
-    font-size: 1.2rem;
-    line-height: 1.6;
-    overflow-x: hidden;
-    min-height: 100vh;
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: "Space Grotesk", system-ui, sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; touch-action: manipulation; }
+  .dock { z-index: 3; }
+
+  /* Globe büyük tutulup kaydırılıyor: odak noktası fotoğrafın yanına/altına düşsün */
+  #globe { position: fixed; top: 0; left: 0; width: 140vw; height: 100vh; }
+  @media (max-width: 760px) { #globe { width: 100vw; height: 156vh; } }
+
+  .label { transform: translate(-50%, -150%); padding: 3px 9px; border-radius: 8px; background: rgba(0,0,0,.6);
+           font-size: 13px; font-weight: 500; white-space: nowrap; pointer-events: none; border: 1px solid var(--line); }
+
+  /* fotoğraf sahnesi */
+  .stage { position: fixed; top: 0; left: 0; width: 58vw; height: 100vh; display: flex; align-items: center; justify-content: center;
+           padding: 70px 24px 120px; pointer-events: none; perspective: 1200px; }
+  @media (max-width: 760px) { .stage { width: 100vw; height: 66vh; padding: 56px 16px 12px; } }
+
+  .card { position: absolute; background: var(--paper); color: var(--ink); padding: 12px 12px 0; border-radius: 4px;
+          box-shadow: 0 30px 60px rgba(0,0,0,.55), 0 4px 14px rgba(0,0,0,.35); pointer-events: auto;
+          transition: transform .9s cubic-bezier(.2,.8,.2,1), opacity .9s; will-change: transform, opacity; }
+  .card img { display: block; max-width: min(46vw, 820px); max-height: calc(100vh - 290px); width: auto; height: auto; border-radius: 2px; background: #ddd; }
+  @media (max-width: 760px) { .card { padding: 8px 8px 0; } .card img { max-width: calc(100vw - 48px); max-height: calc(66vh - 150px); } }
+  .cap { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 4px 12px; }
+  .city { font-family: "Caveat", cursive; font-size: 1.9rem; line-height: 1; }
+  .city small { font-family: "Space Grotesk", sans-serif; font-size: .8rem; color: #8b8080; margin-left: 6px; }
+  .when { font-size: .85rem; color: #8b8080; white-space: nowrap; text-align: right; }
+  .when b { display: block; color: var(--pink); font-weight: 500; }
+
+  .card.enter { opacity: 0; }
+  .card.leave { opacity: 0; pointer-events: none; }
+
+  /* üst bar */
+  .top { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center;
+         padding: 16px 20px; pointer-events: none; }
+  .brand { font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 500; }
+
+  /* alt kontroller */
+  .dock { position: fixed; left: 16px; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .ctrl { width: 44px; height: 44px; border-radius: 50%; background: var(--glass); border: 1px solid var(--line);
+          backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: grid; place-items: center; font-size: 1.05rem; flex: none; }
+  .ctrl:hover { background: rgba(255,255,255,.14); }
+  .ctrl svg { width: 18px; height: 18px; fill: currentColor; }
+
+  .timeline { position: relative; flex: 1; height: 44px; border-radius: 22px; background: var(--glass); border: 1px solid var(--line);
+              backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 0 18px; cursor: pointer; touch-action: none; }
+  .ticks { position: absolute; left: 18px; right: 18px; top: 9px; height: 12px; display: flex; gap: 2px; }
+  .tick { flex: 1; border-radius: 2px; background: rgba(255,255,255,.18); transition: background .3s; }
+  .tick.past { background: rgba(255,181,71,.55); }
+  .tick.cur { background: var(--pink); transform: scaleY(1.5); }
+  .years { position: absolute; left: 18px; right: 18px; bottom: 5px; height: 14px; font-size: 10px; color: var(--muted); }
+  .years span { position: absolute; transform: translateX(-2px); }
+
+  #player { width: 300px; height: 80px; border-radius: 12px; overflow: hidden; flex: none; }
+  @media (max-width: 760px) {
+    .dock { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
+    .row.main { order: 2; }
+    #player { width: 100%; }
   }
-  main { max-width: 720px; margin: 0 auto; padding: 0 16px; position: relative; z-index: 1; }
 
-  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-  .eyebrow { letter-spacing: .3em; text-transform: uppercase; font-size: .85rem; color: var(--muted); }
-  h1 { font-family: "Great Vibes", cursive; font-weight: 400; font-size: clamp(4.5rem, 18vw, 8rem); color: var(--rose-deep); line-height: 1.1; margin: .2em 0; }
-  .years { font-size: clamp(1.6rem, 6vw, 2.2rem); font-style: italic; }
-  .date { color: var(--muted); margin-top: .3em; }
-  .heart { color: var(--rose); font-size: 1.6rem; margin: 1.2rem 0; animation: beat 1.6s ease-in-out infinite; }
-  @keyframes beat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } }
-  .scroll { margin-top: 2rem; color: var(--muted); text-decoration: none; font-size: .95rem; }
-
-  section { padding: 4rem 0; text-align: center; }
-  h2 { font-family: "Great Vibes", cursive; font-weight: 400; font-size: 2.8rem; color: var(--rose-deep); margin-bottom: 1.2rem; }
-
-  .counter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 520px; margin: 0 auto; }
-  .unit { background: rgba(255,255,255,.6); border: 1px solid var(--blush); border-radius: 14px; padding: 14px 4px; }
-  .num { display: block; font-size: clamp(1.6rem, 7vw, 2.4rem); font-weight: 600; color: var(--rose-deep); font-variant-numeric: tabular-nums; }
-  .lbl { font-size: .85rem; color: var(--muted); }
-  .total { margin-top: 1rem; font-style: italic; color: var(--muted); }
-
-  .player { border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(156,74,83,.15); }
-  .player iframe { display: block; width: 100%; height: 452px; border: 0; }
-
-  .letter { background: rgba(255,255,255,.7); border: 1px solid var(--blush); border-radius: 18px; padding: 2.2rem 1.6rem; text-align: left; box-shadow: 0 10px 30px rgba(156,74,83,.08); }
-  .letter p + p { margin-top: 1em; }
-  .sign { text-align: right; font-family: "Great Vibes", cursive; font-size: 2rem; color: var(--rose-deep); margin-top: 1.2rem; }
-
-  footer { text-align: center; padding: 3rem 0 4rem; color: var(--muted); font-size: .95rem; }
-
-  .petal { position: fixed; top: -40px; z-index: 0; pointer-events: none; color: var(--rose); opacity: .35; animation: fall linear forwards; }
-  @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .heart, .petal { animation: none; } .petal { display: none; } }
+  /* açılış */
+  .start { position: fixed; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+           text-align: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(5,6,13,.25), rgba(5,6,13,.9)); transition: opacity .8s; }
+  .start h1 { font-size: clamp(2.2rem, 8vw, 4.4rem); line-height: 1.02; letter-spacing: -.02em; }
+  .start p { color: var(--muted); }
+  .start button { margin-top: 12px; padding: 14px 30px; border-radius: 999px; background: var(--accent); color: #1a1208; font-weight: 700; font-size: 1.05rem; }
+  .start button:hover { filter: brightness(1.08); }
+  .start.gone { opacity: 0; pointer-events: none; }
 </style>
 </head>
 <body>
-<main>
-  <header class="hero">
-    <p class="eyebrow">20 Kasım 2021 – 20 Kasım 2026</p>
-    <h1>Bengü</h1>
-    <p class="years">Beş yıl, bir ömrün en güzel başlangıcı</p>
-    <div class="heart">♥</div>
-    <p class="date">5. evlilik yıl dönümümüz kutlu olsun</p>
-    <a class="scroll" href="#sayac">aşağı kaydır ↓</a>
-  </header>
+<div id="globe"></div>
+<div class="stage" id="stage"></div>
 
-  <section id="sayac">
-    <h2>Birlikte geçen zaman</h2>
-    <div class="counter">
-      <div class="unit"><span class="num" id="y">0</span><span class="lbl">yıl</span></div>
-      <div class="unit"><span class="num" id="d">0</span><span class="lbl">gün</span></div>
-      <div class="unit"><span class="num" id="h">0</span><span class="lbl">saat</span></div>
-      <div class="unit"><span class="num" id="m">0</span><span class="lbl">dakika</span></div>
-    </div>
-    <p class="total" id="total"></p>
-  </section>
+<div class="top">
+  <div class="brand">You shot me down, beng beng</div>
+  <div class="num" id="num"></div>
+</div>
 
-  <section>
-    <h2>Senin için hazırladım</h2>
-    <div class="player">
-      <iframe src="https://open.spotify.com/embed/playlist/0QIMADjQtN9GnuYD6gvrHE?utm_source=generator&theme=0"
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        loading="lazy" title="Bengü için çalma listesi"></iframe>
-    </div>
-  </section>
+<div class="dock">
+  <div class="row main">
+    <button class="ctrl" id="prev" aria-label="önceki"><svg viewBox="0 0 24 24"><path d="M15.5 4 7.5 12l8 8 1.4-1.4L10.3 12l6.6-6.6z"/></svg></button>
+    <button class="ctrl" id="play" aria-label="oynat/durdur"></button>
+    <button class="ctrl" id="next" aria-label="sonraki"><svg viewBox="0 0 24 24"><path d="M8.5 4 7.1 5.4l6.6 6.6-6.6 6.6L8.5 20l8-8z"/></svg></button>
+    <div class="timeline" id="timeline"><div class="ticks" id="ticks"></div><div class="years" id="years"></div></div>
+  </div>
+  <div class="row"><div id="player"></div></div>
+</div>
 
-  <section>
-    <h2>Sana birkaç satır</h2>
-    <div class="letter">
-      <!-- MESAJ: Aşağıdaki paragrafları kendi mesajınla değiştir. -->
-      <p>Sevgili Bengü,</p>
-      <p>Beş yıl önce bugün “evet” dediğimizde, ne kadar güzel bir yola çıktığımızı tam bilmiyordum. Şimdi biliyorum: her günüm seninle daha anlamlı, daha sıcak, daha bizim.</p>
-      <p>Bu şarkıları senin için seçtim. Her biri bizden bir parça. Dinlerken beni düşün, ben zaten hep seni düşünüyorum.</p>
-      <p>Nice beş yıllara, hep birlikte.</p>
-      <p class="sign">Seni seviyorum</p>
-    </div>
-  </section>
+<div class="start" id="start">
+  <h1>You shot me down,<br>beng beng</h1>
+  <button id="go">Yolculuğa başla ✈</button>
+</div>
 
-  <footer>20.11.2021 · sonsuza dek ♥</footer>
-</main>
-
+<script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.1/dist/globe.gl.min.js"></script>
 <script>
-  // Düğün tarihi (yerel saat)
-  const start = new Date(2021, 10, 20, 0, 0, 0);
-  const $ = id => document.getElementById(id);
+const PHOTOS = [{"src":"photos/01.jpg","date":"2018-01-21","city":"Amsterdam","region":"Hollanda","lat":52.37,"lng":4.89,"w":1536,"h":2046},{"src":"photos/02.jpg","date":"2018-01-23","city":"Brüksel","region":"Belçika","lat":50.85,"lng":4.36,"w":1536,"h":2046},{"src":"photos/03.jpg","date":"2018-01-24","city":"Brugge","region":"Belçika","lat":51.21,"lng":3.23,"w":1280,"h":960},{"src":"photos/04.jpg","date":"2018-01-24","city":"Brugge","region":"Belçika","lat":51.21,"lng":3.22,"w":2046,"h":1536},{"src":"photos/05.jpg","date":"2018-01-25","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":2046,"h":1536},{"src":"photos/06.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.35,"w":1536,"h":2046},{"src":"photos/07.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/08.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.85,"lng":2.35,"w":1536,"h":2046},{"src":"photos/09.jpg","date":"2018-01-26","city":"Paris","region":"Fransa","lat":48.86,"lng":2.29,"w":1536,"h":2048},{"src":"photos/10.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/11.jpg","date":"2018-01-27","city":"Paris","region":"Fransa","lat":48.89,"lng":2.34,"w":2046,"h":1536},{"src":"photos/12.jpg","date":"2018-09-15","city":"Yedigöller","region":"Bolu","lat":40.94,"lng":31.75,"w":1536,"h":2048},{"src":"photos/13.jpg","date":"2019-04-04","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/14.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/15.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/16.jpg","date":"2019-04-05","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/17.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/18.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/19.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":2048,"h":1536},{"src":"photos/20.jpg","date":"2019-04-06","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/21.jpg","date":"2019-04-07","city":"Barselona","region":"İspanya","lat":41.38,"lng":2.19,"w":1330,"h":2365,"est":true},{"src":"photos/22.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/23.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/24.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/25.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":2046,"h":1536},{"src":"photos/26.jpg","date":"2019-04-09","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/27.jpg","date":"2019-04-10","city":"Lizbon","region":"Portekiz","lat":38.71,"lng":-9.15,"w":1330,"h":2365,"est":true},{"src":"photos/28.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/29.jpg","date":"2021-06-19","city":"Kalkan","region":"Antalya","lat":36.26,"lng":29.37,"w":2048,"h":1536},{"src":"photos/30.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/31.jpg","date":"2021-07-31","city":"İstanbul","region":"Türkiye","lat":41.07,"lng":29.06,"w":1536,"h":2048},{"src":"photos/32.jpg","date":"2021-11-20","city":"Ankara","region":"Türkiye","lat":39.87,"lng":32.7,"w":1536,"h":2048},{"src":"photos/33.jpg","date":"2022-02-13","city":"Münih","region":"Almanya","lat":48.18,"lng":11.53,"w":2048,"h":1536},{"src":"photos/34.jpg","date":"2022-10-31","city":"Münih","region":"Almanya","lat":48.13,"lng":11.58,"w":2048,"h":1536},{"src":"photos/35.jpg","date":"2023-04-07","city":"Verona","region":"İtalya","lat":45.45,"lng":11.0,"w":1536,"h":2048},{"src":"photos/36.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/37.jpg","date":"2024-09-19","city":"Floransa","region":"İtalya","lat":43.77,"lng":11.26,"w":2048,"h":1536},{"src":"photos/38.jpg","date":"2024-11-20","city":"Münih","region":"Almanya","lat":48.13,"lng":11.59,"w":2048,"h":1536},{"src":"photos/39.jpg","date":"2025-12-01","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.49,"w":1536,"h":2048},{"src":"photos/40.jpg","date":"2025-12-03","city":"Bangkok","region":"Tayland","lat":13.75,"lng":100.56,"w":2048,"h":1536},{"src":"photos/41.jpg","date":"2025-12-04","city":"Chiang Mai","region":"Tayland","lat":18.79,"lng":98.99,"w":1536,"h":2048},{"src":"photos/42.jpg","date":"2025-12-06","city":"Chiang Mai","region":"Tayland","lat":19.21,"lng":98.86,"w":2048,"h":1536},{"src":"photos/43.jpg","date":"2025-12-08","city":"Krabi","region":"Tayland","lat":8.11,"lng":98.78,"w":2048,"h":1536},{"src":"photos/44.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":1536,"h":2048},{"src":"photos/45.jpg","date":"2025-12-09","city":"Krabi","region":"Tayland","lat":8.08,"lng":98.68,"w":2048,"h":1536},{"src":"photos/46.jpg","date":"2025-12-10","city":"Phi Phi","region":"Tayland","lat":7.68,"lng":98.77,"w":1536,"h":2048},{"src":"photos/47.jpg","date":"2025-12-12","city":"Bangkok","region":"Tayland","lat":13.73,"lng":100.58,"w":2048,"h":1536},{"src":"photos/48.jpg","date":"2026-02-21","city":"İstanbul","region":"Türkiye","lat":41.02,"lng":28.97,"w":1536,"h":2048},{"src":"photos/49.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/50.jpg","date":"2026-03-14","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.19,"w":1536,"h":2048},{"src":"photos/51.jpg","date":"2026-03-16","city":"Londra","region":"İngiltere","lat":51.5,"lng":-0.14,"w":2048,"h":1536},{"src":"photos/52.jpg","date":"2026-03-17","city":"Londra","region":"İngiltere","lat":51.51,"lng":-0.09,"w":2048,"h":1536},{"src":"photos/53.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":2048,"h":1536},{"src":"photos/54.jpg","date":"2026-03-18","city":"Watford","region":"İngiltere","lat":51.69,"lng":-0.42,"w":1536,"h":2048},{"src":"photos/55.jpg","date":"2026-03-25","city":"Edinburgh","region":"İskoçya","lat":55.95,"lng":-3.22,"w":2048,"h":1536},{"src":"photos/56.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":1536,"h":2048},{"src":"photos/57.jpg","date":"2026-08-30","city":"Olbia","region":"Sardinya","lat":40.92,"lng":9.5,"w":2048,"h":1536},{"src":"photos/58.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":1536,"h":2048},{"src":"photos/59.jpg","date":"2026-09-02","city":"Cala Gonone","region":"Sardinya","lat":40.12,"lng":9.68,"w":2048,"h":1536},{"src":"photos/60.jpg","date":"2026-09-14","city":"Gaziantep","region":"Türkiye","lat":37.07,"lng":37.38,"w":2048,"h":1536},{"src":"photos/61.jpg","date":"2026-09-15","city":"Şanlıurfa","region":"Türkiye","lat":37.15,"lng":38.79,"w":2048,"h":1536},{"src":"photos/62.jpg","date":"2026-09-16","city":"Mardin","region":"Türkiye","lat":37.31,"lng":40.74,"w":2048,"h":1536}];
+const PLAYLIST = "spotify:playlist:0QIMADjQtN9GnuYD6gvrHE";
+const STEP_MS = 9000;          // otomatik oynatmada foto başına süre
+const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 
-  function tick() {
-    const now = new Date();
-    let years = now.getFullYear() - start.getFullYear();
-    let anniv = new Date(start); anniv.setFullYear(start.getFullYear() + years);
-    if (anniv > now) { years--; anniv.setFullYear(start.getFullYear() + years); }
-    let ms = now - anniv;
-    const days = Math.floor(ms / 864e5); ms -= days * 864e5;
-    const hours = Math.floor(ms / 36e5); ms -= hours * 36e5;
-    const mins = Math.floor(ms / 6e4);
-    $("y").textContent = years; $("d").textContent = days;
-    $("h").textContent = hours; $("m").textContent = mins;
-    const totalDays = Math.floor((now - start) / 864e5);
-    $("total").textContent = `Toplam ${totalDays.toLocaleString("tr-TR")} gün, her biri seninle.`;
-  }
-  tick(); setInterval(tick, 30000);
+const $ = id => document.getElementById(id);
+const IMG = "https://cdn.jsdelivr.net/npm/three-globe@2.45.6/example/img/";
+const isMobile = () => matchMedia("(max-width: 760px)").matches;
 
-  // Hafif düşen kalpler
-  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    setInterval(() => {
-      const p = document.createElement("span");
-      p.className = "petal";
-      p.textContent = Math.random() < .5 ? "♥" : "❀";
-      p.style.left = Math.random() * 100 + "vw";
-      p.style.fontSize = 10 + Math.random() * 14 + "px";
-      p.style.animationDuration = 8 + Math.random() * 6 + "s";
-      document.body.appendChild(p);
-      setTimeout(() => p.remove(), 15000);
-    }, 900);
+// ---------- şehirler & rota ----------
+const cityKey = p => p.city;
+const cities = [...new Map(PHOTOS.map(p => [cityKey(p), p])).values()];
+// ardışık farklı şehirler arası uçuşlar
+const legs = [];
+PHOTOS.forEach((p, i) => {
+  const q = PHOTOS[i - 1];
+  if (q && cityKey(q) !== cityKey(p)) legs.push({ at: i, startLat: q.lat, startLng: q.lng, endLat: p.lat, endLng: p.lng });
+});
+
+
+// ---------- globe ----------
+const globeEl = $("globe");
+const world = Globe()(globeEl)
+  .globeImageUrl(IMG + "earth-night.jpg")
+  .bumpImageUrl(IMG + "earth-topology.png")
+  .backgroundImageUrl(IMG + "night-sky.png")
+  .atmosphereColor("#ff9db0")
+  .atmosphereAltitude(0.18)
+  .pointsData(cities)
+  .pointLat("lat").pointLng("lng")
+  .pointColor(() => "#ffb547")
+  .pointAltitude(0.005)
+  .pointRadius(0.22)
+  .arcColor(d => d.cur ? ["#ffb547", "#ff6b8b"] : "rgba(255,181,71,.28)")
+  .arcStroke(d => d.cur ? 0.7 : 0.3)
+  .arcDashLength(d => d.cur ? 0.45 : 1)
+  .arcDashGap(d => d.cur ? 0.15 : 0)
+  .arcDashInitialGap(d => d.cur ? 1 : 0)
+  .arcDashAnimateTime(d => d.cur ? 1600 : 0)
+  .arcAltitudeAutoScale(0.45)
+  .ringColor(() => t => `rgba(255,107,139,${1 - t})`)
+  .ringMaxRadius(2.6).ringPropagationSpeed(1.6).ringRepeatPeriod(1100)
+  .htmlElementsData([])
+  .htmlElement(d => { const el = document.createElement("div"); el.className = "label"; el.textContent = d.city; return el; });
+
+world.controls().autoRotate = true;
+world.controls().autoRotateSpeed = 0.5;
+world.controls().enableZoom = false;
+world.pointOfView({ lat: 35, lng: 30, altitude: 2.6 });
+
+function fit() { world.width(globeEl.clientWidth).height(globeEl.clientHeight); }
+addEventListener("resize", fit); fit();
+
+const dist = (a, b) => Math.hypot(a.lat - b.lat, (a.lng - b.lng) * Math.cos((a.lat + b.lat) / 2 * Math.PI / 180));
+let flyTimer = null;
+
+function flyTo(p, prev) {
+  clearTimeout(flyTimer);
+  const near = isMobile() ? 1.1 : 0.85;
+  if (!prev || cityKey(prev) === cityKey(p)) {
+    world.pointOfView({ lat: p.lat, lng: p.lng, altitude: near }, 1400);
+    return 1400;
   }
+  const d = dist(prev, p);
+  const peak = Math.min(2.8, 1.1 + d / 35);
+  const t1 = Math.min(1400, 700 + d * 12), t2 = 1300;
+  world.pointOfView({ lat: (prev.lat + p.lat) / 2, lng: (prev.lng + p.lng) / 2, altitude: peak }, t1);
+  flyTimer = setTimeout(() => world.pointOfView({ lat: p.lat, lng: p.lng, altitude: near }, t2), t1);
+  return t1 + t2;
+}
+
+// ---------- fotoğraf kartları ----------
+const stage = $("stage");
+let cur = -1, card = null;
+
+function fmtDate(s) {
+  const [y, m, d] = s.split("-").map(Number);
+  return `${d} ${AYLAR[m - 1]} ${y}`;
+}
+function special(s) {
+  if (s === "2021-11-20") return "düğünümüz 💍";
+  if (s.endsWith("-11-20")) return `${+s.slice(0, 4) - 2021}. yıl dönümü`;
+  return "";
+}
+
+function makeCard(p) {
+  const el = document.createElement("figure");
+  el.className = "card enter";
+  const sp = special(p.date);
+  el.innerHTML = `<img src="${p.src}" width="${p.w}" height="${p.h}" alt="${p.city}">
+    <figcaption class="cap"><span class="city">${p.city}<small>${p.region}</small></span>
+    <span class="when">${sp ? `<b>${sp}</b>` : ""}${fmtDate(p.date)}</span></figcaption>`;
+  return el;
+}
+
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+function show(i) {
+  i = (i + PHOTOS.length) % PHOTOS.length;
+  if (i === cur) return;
+  const dir = i > cur ? 1 : -1;
+  const prev = PHOTOS[cur], p = PHOTOS[i];
+  cur = i;
+
+  // eski kart: yön tarafına savrulur
+  if (card) {
+    const old = card;
+    old.classList.add("leave");
+    old.style.transform = `translate(${-dir * 70}vw, ${rnd(-6, 6)}vh) rotate(${-dir * rnd(14, 24)}deg)`;
+    setTimeout(() => old.remove(), 950);
+  }
+  // yeni kart: masaya atılmış gibi düşer
+  const el = makeCard(p);
+  const rot = rnd(-3.5, 3.5);
+  el.style.transform = `translate(${dir * 30}vw, 10vh) rotate(${dir * 18}deg) scale(.85)`;
+  stage.appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    el.classList.remove("enter");
+    el.style.transform = `rotate(${rot}deg)`;
+  }));
+  card = el;
+
+  // globe
+  const flight = flyTo(p, prev);
+  world.ringsData([p]);
+  world.htmlElementsData([p]);
+  world.arcsData(legs.filter(l => l.at <= i).map(l => ({ ...l, cur: l.at === i && prev && cityKey(prev) !== cityKey(p) })));
+  world.controls().autoRotate = false;
+
+  // UI
+  $("num").textContent = `${String(i + 1).padStart(2, "0")} / ${PHOTOS.length}`;
+  document.querySelectorAll(".tick").forEach((t, k) => { t.classList.toggle("past", k < i); t.classList.toggle("cur", k === i); });
+
+  // sonraki fotoları önceden yükle
+  [1, 2].forEach(k => { const n = PHOTOS[(i + k) % PHOTOS.length]; if (n) new Image().src = n.src; });
+
+  scheduleNext(flight);
+}
+
+// ---------- otomatik oynatma ----------
+let playing = false, nextTimer = null;
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+function scheduleNext(flight = 0) {
+  clearTimeout(nextTimer);
+  if (!playing) return;
+  const wait = Math.max(STEP_MS, flight + 6000);
+  nextTimer = setTimeout(() => show(cur + 1), wait);
+}
+function setPlaying(v) {
+  playing = v;
+  $("play").innerHTML = v ? ICON_PAUSE : ICON_PLAY;
+  if (v) scheduleNext(); else clearTimeout(nextTimer);
+}
+setPlaying(false);
+
+// ---------- timeline ----------
+$("ticks").innerHTML = PHOTOS.map(() => '<div class="tick"></div>').join("");
+$("years").innerHTML = PHOTOS.map((p, i) => [p, i]).filter(([p, i]) => i === 0 || p.date.slice(0, 4) !== PHOTOS[i - 1].date.slice(0, 4))
+  .map(([p, i]) => `<span style="left:${i / PHOTOS.length * 100}%">${p.date.slice(2, 4)}'</span>`).join("");
+
+const tl = $("timeline");
+function tlIndex(e) {
+  const r = $("ticks").getBoundingClientRect();
+  return Math.max(0, Math.min(PHOTOS.length - 1, Math.floor((e.clientX - r.left) / r.width * PHOTOS.length)));
+}
+let dragging = false;
+tl.addEventListener("pointerdown", e => { dragging = true; tl.setPointerCapture(e.pointerId); show(tlIndex(e)); });
+tl.addEventListener("pointermove", e => { if (dragging) show(tlIndex(e)); });
+tl.addEventListener("pointerup", () => { dragging = false; });
+
+// ---------- kontroller ----------
+$("prev").onclick = () => show(cur - 1);
+$("next").onclick = () => show(cur + 1);
+$("play").onclick = () => setPlaying(!playing);
+addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") show(cur + 1);
+  else if (e.key === "ArrowLeft") show(cur - 1);
+  else if (e.key === " ") { e.preventDefault(); setPlaying(!playing); }
+});
+// kaydırma (mobil)
+let sx = null;
+stage.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+stage.addEventListener("touchend", e => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx; sx = null;
+  if (Math.abs(dx) > 40) show(cur + (dx < 0 ? 1 : -1));
+});
+stage.addEventListener("click", e => { if (e.target.closest(".card")) show(cur + 1); });
+
+// ---------- müzik (fotoğraflardan bağımsız) ----------
+let spotify = null;
+window.onSpotifyIframeApiReady = api => {
+  api.createController($("player"), { uri: PLAYLIST, width: "100%", height: 80 }, c => { spotify = c; });
+};
+
+$("go").onclick = () => {
+  $("start").classList.add("gone");
+  spotify?.play();
+  show(0);
+  setPlaying(true);
+};
 </script>
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </body>
 </html>
