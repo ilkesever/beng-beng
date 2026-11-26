@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bengü · 5. Yılımız</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Great+Vibes&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fbf6f0;
+    --blush: #f4e1dc;
+    --rose: #c56b72;
+    --rose-deep: #9c4a53;
+    --ink: #4a3a3a;
+    --muted: #8a7470;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: radial-gradient(ellipse at top, var(--blush) 0%, var(--cream) 60%) fixed;
+    color: var(--ink);
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 0 16px; position: relative; z-index: 1; }
+
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .eyebrow { letter-spacing: .3em; text-transform: uppercase; font-size: .85rem; color: var(--muted); }
+  h1 { font-family: "Great Vibes", cursive; font-weight: 400; font-size: clamp(4.5rem, 18vw, 8rem); color: var(--rose-deep); line-height: 1.1; margin: .2em 0; }
+  .years { font-size: clamp(1.6rem, 6vw, 2.2rem); font-style: italic; }
+  .date { color: var(--muted); margin-top: .3em; }
+  .heart { color: var(--rose); font-size: 1.6rem; margin: 1.2rem 0; animation: beat 1.6s ease-in-out infinite; }
+  @keyframes beat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.2); } 30% { transform: scale(1); } }
+  .scroll { margin-top: 2rem; color: var(--muted); text-decoration: none; font-size: .95rem; }
+
+  section { padding: 4rem 0; text-align: center; }
+  h2 { font-family: "Great Vibes", cursive; font-weight: 400; font-size: 2.8rem; color: var(--rose-deep); margin-bottom: 1.2rem; }
+
+  .counter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 520px; margin: 0 auto; }
+  .unit { background: rgba(255,255,255,.6); border: 1px solid var(--blush); border-radius: 14px; padding: 14px 4px; }
+  .num { display: block; font-size: clamp(1.6rem, 7vw, 2.4rem); font-weight: 600; color: var(--rose-deep); font-variant-numeric: tabular-nums; }
+  .lbl { font-size: .85rem; color: var(--muted); }
+  .total { margin-top: 1rem; font-style: italic; color: var(--muted); }
+
+  .player { border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(156,74,83,.15); }
+  .player iframe { display: block; width: 100%; height: 452px; border: 0; }
+
+  .letter { background: rgba(255,255,255,.7); border: 1px solid var(--blush); border-radius: 18px; padding: 2.2rem 1.6rem; text-align: left; box-shadow: 0 10px 30px rgba(156,74,83,.08); }
+  .letter p + p { margin-top: 1em; }
+  .sign { text-align: right; font-family: "Great Vibes", cursive; font-size: 2rem; color: var(--rose-deep); margin-top: 1.2rem; }
+
+  footer { text-align: center; padding: 3rem 0 4rem; color: var(--muted); font-size: .95rem; }
+
+  .petal { position: fixed; top: -40px; z-index: 0; pointer-events: none; color: var(--rose); opacity: .35; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .heart, .petal { animation: none; } .petal { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="eyebrow">20 Kasım 2021 – 20 Kasım 2026</p>
+    <h1>Bengü</h1>
+    <p class="years">Beş yıl, bir ömrün en güzel başlangıcı</p>
+    <div class="heart">♥</div>
+    <p class="date">5. evlilik yıl dönümümüz kutlu olsun</p>
+    <a class="scroll" href="#sayac">aşağı kaydır ↓</a>
+  </header>
+
+  <section id="sayac">
+    <h2>Birlikte geçen zaman</h2>
+    <div class="counter">
+      <div class="unit"><span class="num" id="y">0</span><span class="lbl">yıl</span></div>
+      <div class="unit"><span class="num" id="d">0</span><span class="lbl">gün</span></div>
+      <div class="unit"><span class="num" id="h">0</span><span class="lbl">saat</span></div>
+      <div class="unit"><span class="num" id="m">0</span><span class="lbl">dakika</span></div>
+    </div>
+    <p class="total" id="total"></p>
+  </section>
+
+  <section>
+    <h2>Senin için hazırladım</h2>
+    <div class="player">
+      <iframe src="https://open.spotify.com/embed/playlist/0QIMADjQtN9GnuYD6gvrHE?utm_source=generator&theme=0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy" title="Bengü için çalma listesi"></iframe>
+    </div>
+  </section>
+
+  <section>
+    <h2>Sana birkaç satır</h2>
+    <div class="letter">
+      <!-- MESAJ: Aşağıdaki paragrafları kendi mesajınla değiştir. -->
+      <p>Sevgili Bengü,</p>
+      <p>Beş yıl önce bugün “evet” dediğimizde, ne kadar güzel bir yola çıktığımızı tam bilmiyordum. Şimdi biliyorum: her günüm seninle daha anlamlı, daha sıcak, daha bizim.</p>
+      <p>Bu şarkıları senin için seçtim. Her biri bizden bir parça. Dinlerken beni düşün, ben zaten hep seni düşünüyorum.</p>
+      <p>Nice beş yıllara, hep birlikte.</p>
+      <p class="sign">Seni seviyorum</p>
+    </div>
+  </section>
+
+  <footer>20.11.2021 · sonsuza dek ♥</footer>
+</main>
+
+<script>
+  // Düğün tarihi (yerel saat)
+  const start = new Date(2021, 10, 20, 0, 0, 0);
+  const $ = id => document.getElementById(id);
+
+  function tick() {
+    const now = new Date();
+    let years = now.getFullYear() - start.getFullYear();
+    let anniv = new Date(start); anniv.setFullYear(start.getFullYear() + years);
+    if (anniv > now) { years--; anniv.setFullYear(start.getFullYear() + years); }
+    let ms = now - anniv;
+    const days = Math.floor(ms / 864e5); ms -= days * 864e5;
+    const hours = Math.floor(ms / 36e5); ms -= hours * 36e5;
+    const mins = Math.floor(ms / 6e4);
+    $("y").textContent = years; $("d").textContent = days;
+    $("h").textContent = hours; $("m").textContent = mins;
+    const totalDays = Math.floor((now - start) / 864e5);
+    $("total").textContent = `Toplam ${totalDays.toLocaleString("tr-TR")} gün, her biri seninle.`;
+  }
+  tick(); setInterval(tick, 30000);
+
+  // Hafif düşen kalpler
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    setInterval(() => {
+      const p = document.createElement("span");
+      p.className = "petal";
+      p.textContent = Math.random() < .5 ? "♥" : "❀";
+      p.style.left = Math.random() * 100 + "vw";
+      p.style.fontSize = 10 + Math.random() * 14 + "px";
+      p.style.animationDuration = 8 + Math.random() * 6 + "s";
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 15000);
+    }, 900);
+  }
+</script>
+</body>
+</html>
