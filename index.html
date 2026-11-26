@@ -404,7 +404,7 @@ function makeCard(p, hidden = false) {
   const el = document.createElement("figure");
   el.className = "card enter";
   el.innerHTML = `<img src="${p.src}" width="${p.w}" height="${p.h}" alt="">
-    <figcaption class="cap">${hidden ? '<span><span class="city">Burası neresi?</span><br><span class="hint2">haritada tahmin et 👆</span></span><span class="btns"><button class="tbtn">🌍 Tahmin et</button><button class="peek">Göster 👀</button></span>' : captionHTML(p)}</figcaption>`;
+    <figcaption class="cap">${hidden ? '<span><span class="city">Burası neresi?</span><br><span class="hint2">haritada işaretleyebilir misin? 📍</span></span><span class="btns"><button class="tbtn">📍 İşaretle</button><button class="peek">Göster 👀</button></span>' : captionHTML(p)}</figcaption>`;
   return el;
 }
 
@@ -619,7 +619,7 @@ stage.addEventListener("touchend", e => {
 });
 stage.addEventListener("click", e => {
   if (document.body.classList.contains("mini")) { if (e.target.closest(".card") && !closeResult()) setMini(false); return; }   // küçük fotoya dokun: tekrar bak
-  if (e.target.closest(".tbtn")) { setMini(true); toast("Dünyada bir yere dokun 👆"); }
+  if (e.target.closest(".tbtn")) { setMini(true); toast("Haritada işaretleyebilir misin? 📍"); }
   else if (e.target.closest(".peek")) reveal();
   else if (e.target.closest(".card") && !hidden) show(cur + 1);
 });
